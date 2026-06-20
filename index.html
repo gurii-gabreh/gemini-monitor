@@ -6,311 +6,170 @@
 <title>Gemini API 混雑モニター</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  /* ── Token System ─────────────────────────────────── */
-  :root {
-    --bg:         #0b0f1a;
-    --surface:    #111827;
-    --surface2:   #1a2234;
-    --border:     #1f2d45;
-    --accent:     #4ade80;   /* Gemini green – signal */
-    --accent2:    #60a5fa;   /* blue – latency */
-    --warn:       #fbbf24;   /* amber – rate limit */
-    --danger:     #f87171;   /* red – error */
-    --text:       #e2e8f0;
-    --text-muted: #64748b;
-    --text-dim:   #94a3b8;
-    --radius:     10px;
-    --radius-sm:  6px;
-    --font-mono:  'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-    --font-body:  'Inter', system-ui, sans-serif;
-  }
+:root {
+  --bg:#0b0f1a; --surface:#111827; --surface2:#1a2234; --border:#1f2d45;
+  --accent:#4ade80; --accent2:#60a5fa; --warn:#fbbf24; --danger:#f87171;
+  --text:#e2e8f0; --text-muted:#64748b; --text-dim:#94a3b8;
+  --radius:10px; --radius-sm:6px;
+  --font-mono:'JetBrains Mono','Fira Code',ui-monospace,monospace;
+  --font-body:'Inter',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;line-height:1.6;}
+.app{max-width:1200px;margin:0 auto;padding:0 16px 48px;}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Header */
+header{padding:28px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.85);}}
+h1{font-size:1.3rem;font-weight:700;letter-spacing:-0.02em;}
+h1 span{color:var(--accent);}
+.subtitle{font-size:0.78rem;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.last-updated{font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--radius-sm);font-size:0.8rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#0b1a0f;}
+.btn-primary:hover{background:#86efac;}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:5px 12px;font-size:0.75rem;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
 
-  /* ── Layout ───────────────────────────────────────── */
-  .app { max-width: 1200px; margin: 0 auto; padding: 0 16px 48px; }
+/* Banner */
+#gas-setup-banner{background:#1a1200;border:1px solid var(--warn);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+#gas-url-input{flex:2;min-width:260px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:7px 12px;font-size:0.8rem;font-family:var(--font-mono);}
+#gas-url-input:focus{outline:none;border-color:var(--accent);}
 
-  /* ── Header ───────────────────────────────────────── */
-  header {
-    padding: 28px 0 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .logo-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.5; transform: scale(0.85); }
-  }
-  h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
-  h1 span { color: var(--accent); }
-  .subtitle { font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-color,var(--accent));}
+.stat-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.stat-value{font-size:1.6rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-color,var(--accent));}
+.stat-sub{font-size:0.72rem;color:var(--text-muted);margin-top:3px;}
 
-  .header-right { display: flex; align-items: center; gap: 10px; }
-  .last-updated { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+/* Controls */
+.controls{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.period-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.period-tab{padding:7px 16px;font-size:0.8rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all .15s;}
+.period-tab.active{background:var(--accent);color:#0b1a0f;}
+.model-filter{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.model-chip{padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);transition:all .15s;font-family:var(--font-mono);}
+.model-chip.active{border-color:var(--chip-color);color:var(--chip-color);background:color-mix(in srgb,var(--chip-color) 15%,transparent);}
+.spacer{flex:1;}
 
-  /* ── Buttons ──────────────────────────────────────── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 16px; border-radius: var(--radius-sm);
-    font-size: 0.8rem; font-weight: 600; cursor: pointer;
-    border: none; transition: all .15s;
-  }
-  .btn-primary { background: var(--accent); color: #0b1a0f; }
-  .btn-primary:hover { background: #86efac; }
-  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-sm { padding: 5px 12px; font-size: 0.75rem; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Panel */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.panel-title{font-size:0.85rem;font-weight:700;color:var(--text-dim);letter-spacing:0.03em;}
+.panel-badge{font-size:0.68rem;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text-muted);font-family:var(--font-mono);}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:700px){.chart-grid{grid-template-columns:1fr;}}
+.chart-wrap{position:relative;height:220px;}
 
-  /* ── GAS URL 設定バナー ───────────────────────────── */
-  #gas-setup-banner {
-    background: #1a1200;
-    border: 1px solid var(--warn);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
-  #gas-setup-banner .banner-icon { font-size: 1.2rem; }
-  #gas-setup-banner .banner-text { flex: 1; min-width: 200px; font-size: 0.85rem; }
-  #gas-setup-banner .banner-text strong { color: var(--warn); }
-  #gas-url-input {
-    flex: 2; min-width: 260px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    padding: 7px 12px;
-    font-size: 0.8rem;
-    font-family: var(--font-mono);
-  }
-  #gas-url-input:focus { outline: none; border-color: var(--accent); }
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto;}
+.heatmap-grid{display:grid;grid-template-columns:80px repeat(24,1fr);gap:3px;min-width:700px;}
+.hm-label{font-size:0.68rem;color:var(--text-muted);display:flex;align-items:center;padding:2px 4px;font-family:var(--font-mono);}
+.hm-header{font-size:0.65rem;color:var(--text-muted);text-align:center;font-family:var(--font-mono);padding:2px 0;}
+.hm-cell{height:26px;border-radius:3px;background:var(--surface2);cursor:pointer;transition:transform .1s;position:relative;}
+.hm-cell:hover{transform:scale(1.15);z-index:10;}
+.hm-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.72rem;white-space:nowrap;z-index:100;pointer-events:none;color:var(--text);}
+.hm-cell:hover .hm-tooltip{display:block;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.74rem;color:var(--text-muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 
-  /* ── Stats Row ────────────────────────────────────── */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--accent-color, var(--accent));
-  }
-  .stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .stat-value { font-size: 1.6rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-color, var(--accent)); }
-  .stat-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; }
+/* History */
+.history-section{margin-top:16px;}
+.history-toggle{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text);}
+.history-toggle:hover{border-color:var(--accent);}
+.history-toggle-title{font-size:0.85rem;font-weight:700;color:var(--text-dim);}
+.history-arrow{transition:transform .25s;font-size:1rem;color:var(--text-muted);}
+.history-toggle.open .history-arrow{transform:rotate(180deg);}
+.history-body{display:none;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:16px 20px;}
+.history-body.open{display:block;}
+.history-period-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.history-period-tab{padding:5px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-muted);transition:all .15s;}
+.history-period-tab.active{background:var(--accent);color:#0b1a0f;border-color:var(--accent);}
+.history-table{width:100%;border-collapse:collapse;font-size:0.8rem;}
+.history-table th{text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;}
+.history-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);}
+.history-table tr:last-child td{border-bottom:none;}
+.history-table tr:hover td{background:var(--surface2);}
+.badge-success{color:var(--accent);}
+.badge-error{color:var(--danger);}
+.history-empty{text-align:center;padding:24px;color:var(--text-muted);font-size:0.82rem;}
 
-  /* ── Control Bar ──────────────────────────────────── */
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .period-tabs { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-  .period-tab {
-    padding: 7px 16px; font-size: 0.8rem; font-weight: 600;
-    cursor: pointer; border: none; background: transparent;
-    color: var(--text-muted); transition: all .15s;
-  }
-  .period-tab.active { background: var(--accent); color: #0b1a0f; }
-  .period-tab:hover:not(.active) { color: var(--text); }
+/* Loading */
+.loading-overlay{display:none;position:absolute;inset:0;background:color-mix(in srgb,var(--surface) 80%,transparent);border-radius:var(--radius);align-items:center;justify-content:center;z-index:10;}
+.loading-overlay.show{display:flex;}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:0.85rem;}
 
-  .model-filter {
-    display: flex; align-items: center; gap: 8px;
-    flex-wrap: wrap;
-  }
-  .model-chip {
-    padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
-    cursor: pointer; border: 1px solid var(--border); background: transparent;
-    color: var(--text-muted); transition: all .15s; font-family: var(--font-mono);
-  }
-  .model-chip.active { border-color: var(--chip-color); color: var(--chip-color); background: color-mix(in srgb, var(--chip-color) 15%, transparent); }
+/* Settings Drawer */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;top:0;right:-420px;width:400px;max-width:100vw;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:201;transition:right .25s ease;overflow-y:auto;padding:28px 24px;}
+.drawer.open{right:0;}
+.drawer-title{font-size:1rem;font-weight:700;margin-bottom:24px;}
+.form-group{margin-bottom:20px;}
+.form-label{display:block;font-size:0.78rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:9px 12px;font-size:0.85rem;}
+.form-input:focus{outline:none;border-color:var(--accent);}
+.model-toggle-list{display:flex;flex-direction:column;gap:8px;}
+.model-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s;}
+.model-toggle:hover{border-color:var(--accent);}
+.model-toggle.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface2));}
+.model-toggle-name{font-size:0.82rem;font-family:var(--font-mono);color:var(--text);}
+.model-toggle-meta{font-size:0.7rem;color:var(--text-muted);}
+.toggle-switch{width:36px;height:20px;border-radius:10px;background:var(--surface);border:1px solid var(--border);position:relative;transition:background .15s;flex-shrink:0;}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text-muted);transition:all .15s;}
+.model-toggle.active .toggle-switch{background:var(--accent);border-color:var(--accent);}
+.model-toggle.active .toggle-switch::after{left:18px;background:#0b1a0f;}
+.size-checkboxes{display:flex;gap:10px;}
+.size-check{flex:1;padding:9px;text-align:center;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-muted);transition:all .15s;user-select:none;}
+.size-check.active{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);}
 
-  .spacer { flex: 1; }
+/* Time slot toggle */
+.time-slot-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s;margin-top:8px;}
+.time-slot-toggle:hover{border-color:var(--accent);}
+.time-slot-label{font-size:0.82rem;color:var(--text);}
+.time-slot-sub{font-size:0.7rem;color:var(--text-muted);margin-top:2px;}
 
-  /* ── Chart Panels ─────────────────────────────────── */
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  .chart-grid.full { grid-template-columns: 1fr; }
-  @media (max-width: 700px) { .chart-grid { grid-template-columns: 1fr; } }
+.drawer-footer{display:flex;gap:10px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);}
 
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-  }
-  .panel-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .panel-title { font-size: 0.85rem; font-weight: 700; color: var(--text-dim); letter-spacing: 0.03em; }
-  .panel-badge {
-    font-size: 0.68rem; padding: 2px 8px; border-radius: 10px;
-    background: var(--surface2); color: var(--text-muted); font-family: var(--font-mono);
-  }
-  .chart-wrap { position: relative; height: 220px; }
-  .chart-wrap-tall { position: relative; height: 300px; }
+/* Progress Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:6px;}
+.modal-subtitle{font-size:0.78rem;color:var(--text-muted);margin-bottom:20px;}
+.progress-list{display:flex;flex-direction:column;gap:8px;}
+.progress-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);}
+.progress-item-left{display:flex;flex-direction:column;gap:2px;}
+.progress-model{font-size:0.8rem;font-family:var(--font-mono);color:var(--text);}
+.progress-size{font-size:0.7rem;color:var(--text-muted);}
+.progress-status{font-size:0.8rem;font-weight:600;}
+.status-pending{color:var(--text-muted);}
+.status-running{color:var(--warn);animation:blink 1s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.status-done{color:var(--accent);}
+.status-error{color:var(--danger);}
+.modal-footer{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-summary{font-size:0.78rem;color:var(--text-muted);}
+.modal-progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:16px;overflow:hidden;}
+.modal-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease;}
 
-  /* ── Heatmap ──────────────────────────────────────── */
-  .heatmap-wrap { overflow-x: auto; }
-  .heatmap-grid {
-    display: grid;
-    grid-template-columns: 60px repeat(24, 1fr);
-    gap: 3px;
-    min-width: 700px;
-  }
-  .hm-label { font-size: 0.68rem; color: var(--text-muted); display: flex; align-items: center; padding: 2px 4px; font-family: var(--font-mono); }
-  .hm-header { font-size: 0.65rem; color: var(--text-muted); text-align: center; font-family: var(--font-mono); padding: 2px 0; }
-  .hm-cell {
-    height: 26px; border-radius: 3px;
-    background: var(--surface2);
-    cursor: pointer;
-    transition: transform .1s;
-    position: relative;
-  }
-  .hm-cell:hover { transform: scale(1.15); z-index: 10; }
-  .hm-tooltip {
-    display: none;
-    position: absolute; bottom: calc(100% + 6px); left: 50%;
-    transform: translateX(-50%);
-    background: #1e293b; border: 1px solid var(--border);
-    border-radius: 6px; padding: 6px 10px; font-size: 0.72rem;
-    white-space: nowrap; z-index: 100; pointer-events: none; color: var(--text);
-  }
-  .hm-cell:hover .hm-tooltip { display: block; }
-
-  /* ── Settings Drawer ──────────────────────────────── */
-  .drawer-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.6); z-index: 200;
-  }
-  .drawer-overlay.open { display: block; }
-  .drawer {
-    position: fixed; top: 0; right: -420px; width: 400px; max-width: 100vw;
-    height: 100vh; background: var(--surface); border-left: 1px solid var(--border);
-    z-index: 201; transition: right .25s ease; overflow-y: auto; padding: 28px 24px;
-  }
-  .drawer.open { right: 0; }
-  .drawer-title { font-size: 1rem; font-weight: 700; margin-bottom: 24px; }
-  .form-group { margin-bottom: 20px; }
-  .form-label { display: block; font-size: 0.78rem; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-  .form-input {
-    width: 100%;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text);
-    padding: 9px 12px; font-size: 0.85rem;
-  }
-  .form-input:focus { outline: none; border-color: var(--accent); }
-
-  .model-toggle-list { display: flex; flex-direction: column; gap: 8px; }
-  .model-toggle {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); cursor: pointer;
-    transition: border-color .15s;
-  }
-  .model-toggle:hover { border-color: var(--accent); }
-  .model-toggle.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface2)); }
-  .model-toggle-name { font-size: 0.82rem; font-family: var(--font-mono); color: var(--text); }
-  .model-toggle-meta { font-size: 0.7rem; color: var(--text-muted); }
-  .toggle-switch {
-    width: 36px; height: 20px; border-radius: 10px;
-    background: var(--surface); border: 1px solid var(--border);
-    position: relative; transition: background .15s;
-    flex-shrink: 0;
-  }
-  .toggle-switch::after {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--text-muted); transition: all .15s;
-  }
-  .model-toggle.active .toggle-switch { background: var(--accent); border-color: var(--accent); }
-  .model-toggle.active .toggle-switch::after { left: 18px; background: #0b1a0f; }
-
-  .size-checkboxes { display: flex; gap: 10px; }
-  .size-check {
-    flex: 1; padding: 9px; text-align: center;
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
-    transition: all .15s; user-select: none;
-  }
-  .size-check.active { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
-
-  .drawer-footer {
-    display: flex; gap: 10px; margin-top: 28px;
-    padding-top: 20px; border-top: 1px solid var(--border);
-  }
-
-  /* ── Loading / Empty ──────────────────────────────── */
-  .loading-overlay {
-    display: none; position: absolute; inset: 0;
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    border-radius: var(--radius); align-items: center; justify-content: center;
-    z-index: 10;
-  }
-  .loading-overlay.show { display: flex; }
-  .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.85rem; }
-  .empty-icon { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.4; }
-
-  /* ── Toast ────────────────────────────────────────── */
-  #toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 20px;
-    font-size: 0.82rem; z-index: 500; transition: transform .3s ease;
-    pointer-events: none;
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-  #toast.success { border-color: var(--accent); color: var(--accent); }
-  #toast.error   { border-color: var(--danger); color: var(--danger); }
-
-  /* ── Status Legend ────────────────────────────────── */
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--text-muted); }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 20px;font-size:0.82rem;z-index:500;transition:transform .3s ease;pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.success{border-color:var(--accent);color:var(--accent);}
+#toast.error{border-color:var(--danger);color:var(--danger);}
 </style>
 </head>
 <body>
@@ -333,34 +192,32 @@
     </div>
   </header>
 
-  <!-- GAS URL 設定バナー -->
+  <!-- GAS URL Banner -->
   <div id="gas-setup-banner">
-    <span class="banner-icon">⚠️</span>
-    <div class="banner-text">
-      <strong>初回設定：</strong>GASをデプロイしてWebアプリURLを入力してください
-    </div>
+    <span>⚠️</span>
+    <div style="flex:1;min-width:200px;font-size:0.85rem;"><strong style="color:var(--warn)">初回設定：</strong>GASをデプロイしてWebアプリURLを入力してください</div>
     <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/xxxxxxx/exec">
     <button class="btn btn-primary btn-sm" id="save-gas-url-btn">保存</button>
   </div>
 
-  <!-- Stats Row -->
-  <div class="stats-row" id="stats-row">
-    <div class="stat-card" style="--accent-color: var(--accent)">
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card" style="--accent-color:var(--accent)">
       <div class="stat-label">成功率（全体）</div>
       <div class="stat-value" id="stat-success-rate">--</div>
       <div class="stat-sub">直近期間</div>
     </div>
-    <div class="stat-card" style="--accent-color: var(--accent2)">
+    <div class="stat-card" style="--accent-color:var(--accent2)">
       <div class="stat-label">平均レイテンシ</div>
       <div class="stat-value" id="stat-avg-latency">--</div>
       <div class="stat-sub">成功リクエスト（小）</div>
     </div>
-    <div class="stat-card" style="--accent-color: var(--warn)">
+    <div class="stat-card" style="--accent-color:var(--warn)">
       <div class="stat-label">レート制限</div>
       <div class="stat-value" id="stat-rate-limit">--</div>
       <div class="stat-sub">直近期間</div>
     </div>
-    <div class="stat-card" style="--accent-color: var(--text-dim)">
+    <div class="stat-card" style="--accent-color:var(--text-dim)">
       <div class="stat-label">総測定数</div>
       <div class="stat-value" id="stat-total">--</div>
       <div class="stat-sub">直近期間</div>
@@ -376,69 +233,70 @@
       <button class="period-tab" data-period="year">年</button>
     </div>
     <div class="model-filter" id="model-filter">
-      <button class="model-chip active" data-model="all" style="--chip-color: var(--text-dim)">全モデル</button>
-      <!-- モデルチップは動的生成 -->
+      <button class="model-chip active" data-model="all" style="--chip-color:var(--text-dim)">全モデル</button>
     </div>
     <div class="spacer"></div>
   </div>
 
-  <!-- Charts: 成功率ヒートマップ（時間帯別）-->
-  <div class="panel" style="margin-bottom: 16px;" id="heatmap-panel">
+  <!-- Heatmap -->
+  <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header">
       <span class="panel-title">🕐 時間帯別 成功率ヒートマップ（JST）</span>
       <span class="panel-badge" id="heatmap-model-label">全モデル</span>
     </div>
     <div class="loading-overlay" id="heatmap-loading"><div class="spinner"></div></div>
-    <div class="heatmap-wrap" id="heatmap-container">
-      <div class="empty-state"><div class="empty-icon">📊</div>データを取得中...</div>
-    </div>
+    <div class="heatmap-wrap" id="heatmap-container"><div class="empty-state">データを取得中...</div></div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#1a3a1f"></div>データなし</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#166534"></div>0〜25%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>25〜50%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>50〜75%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#bbf7d0"></div>75〜100%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div>レート制限多発</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1a2234"></div>データなし</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#14532d"></div>0〜25%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#166534"></div>25〜50%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>50〜75%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>75〜100%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>レート制限多発</div>
     </div>
   </div>
 
-  <!-- Charts Row -->
+  <!-- Charts -->
   <div class="chart-grid">
-    <div class="panel" style="position:relative">
-      <div class="panel-header">
-        <span class="panel-title">📈 時系列 成功率</span>
-        <span class="panel-badge">モデル別</span>
-      </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">📈 時系列 成功率</span><span class="panel-badge">モデル別</span></div>
       <div class="loading-overlay" id="success-loading"><div class="spinner"></div></div>
       <div class="chart-wrap"><canvas id="successChart"></canvas></div>
     </div>
-    <div class="panel" style="position:relative">
-      <div class="panel-header">
-        <span class="panel-title">⏱ 平均レイテンシ推移</span>
-        <span class="panel-badge">小プロンプト基準</span>
-      </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">⏱ 平均レイテンシ推移</span><span class="panel-badge">小プロンプト基準</span></div>
       <div class="loading-overlay" id="latency-loading"><div class="spinner"></div></div>
       <div class="chart-wrap"><canvas id="latencyChart"></canvas></div>
     </div>
   </div>
-
-  <!-- Size breakdown -->
-  <div class="chart-grid" style="margin-top:16px">
-    <div class="panel" style="position:relative">
-      <div class="panel-header">
-        <span class="panel-title">🔬 規模別 成功率（小・中・大）</span>
-        <span class="panel-badge" id="size-chart-model">全体</span>
-      </div>
+  <div class="chart-grid" style="margin-top:16px;">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">🔬 規模別 成功率</span><span class="panel-badge" id="size-chart-model">全体</span></div>
       <div class="loading-overlay" id="size-loading"><div class="spinner"></div></div>
       <div class="chart-wrap"><canvas id="sizeChart"></canvas></div>
     </div>
-    <div class="panel" style="position:relative">
-      <div class="panel-header">
-        <span class="panel-title">🚦 エラー種別 分布</span>
-        <span class="panel-badge">直近期間</span>
-      </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">🚦 エラー種別 分布</span><span class="panel-badge">直近期間</span></div>
       <div class="loading-overlay" id="error-loading"><div class="spinner"></div></div>
       <div class="chart-wrap"><canvas id="errorChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 実行履歴（折りたたみ） -->
+  <div class="history-section">
+    <button class="history-toggle" id="history-toggle">
+      <span class="history-toggle-title">📋 実行履歴</span>
+      <span class="history-arrow">▼</span>
+    </button>
+    <div class="history-body" id="history-body">
+      <div class="history-period-tabs">
+        <button class="history-period-tab active" data-hperiod="day">1日</button>
+        <button class="history-period-tab" data-hperiod="week">1週間</button>
+        <button class="history-period-tab" data-hperiod="month">1ヶ月</button>
+      </div>
+      <div id="history-table-wrap">
+        <div class="history-empty">履歴を読み込み中...</div>
+      </div>
     </div>
   </div>
 
@@ -451,14 +309,10 @@
     <span class="drawer-title">⚙ 設定</span>
     <button class="btn btn-ghost btn-sm" id="close-drawer-btn">✕</button>
   </div>
-
   <div class="form-group">
     <label class="form-label">測定対象モデル</label>
-    <div class="model-toggle-list" id="model-toggle-list">
-      <!-- 動的生成 -->
-    </div>
+    <div class="model-toggle-list" id="model-toggle-list"></div>
   </div>
-
   <div class="form-group">
     <label class="form-label">測定規模</label>
     <div class="size-checkboxes" id="size-checkboxes">
@@ -467,7 +321,6 @@
       <div class="size-check active" data-size="large">大<br><span style="font-size:0.68rem;color:var(--text-muted)">~3000tok</span></div>
     </div>
   </div>
-
   <div class="form-group">
     <label class="form-label">測定間隔（時間）</label>
     <select class="form-input" id="interval-select">
@@ -478,14 +331,35 @@
       <option value="12">12時間毎</option>
       <option value="24">24時間毎</option>
     </select>
-    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px">
-      ※ gemini-2.5-pro（RPD:100）は自動的に「小」のみ測定
-    </div>
   </div>
-
+  <div class="form-group">
+    <label class="form-label">測定時間帯（JST）</label>
+    <div class="time-slot-toggle" id="time-slot-toggle">
+      <div>
+        <div class="time-slot-label" id="time-slot-label">0〜12時（デフォルト）</div>
+        <div class="time-slot-sub" id="time-slot-sub">チェックで12〜24時に切り替え</div>
+      </div>
+      <div class="toggle-switch" id="time-slot-switch"></div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">※ 無料枠節約のため12時間帯に限定しています</div>
+  </div>
   <div class="drawer-footer">
     <button class="btn btn-primary" id="save-settings-btn" style="flex:1">保存して反映</button>
     <button class="btn btn-ghost" id="cancel-settings-btn">キャンセル</button>
+  </div>
+</div>
+
+<!-- Progress Modal -->
+<div class="modal-overlay" id="progress-modal">
+  <div class="modal">
+    <div class="modal-title">▶ 測定実行中</div>
+    <div class="modal-subtitle" id="modal-subtitle">各モデルの測定進捗をリアルタイムで表示しています</div>
+    <div class="modal-progress-bar"><div class="modal-progress-fill" id="modal-progress-fill" style="width:0%"></div></div>
+    <div class="progress-list" id="progress-list" style="margin-top:16px;"></div>
+    <div class="modal-footer">
+      <span class="modal-summary" id="modal-summary">測定開始中...</span>
+      <button class="btn btn-ghost btn-sm" id="close-modal-btn" disabled>閉じる</button>
+    </div>
   </div>
 </div>
 
@@ -494,7 +368,7 @@
 
 <script>
 // ============================================================
-// 定数・状態
+// 定数
 // ============================================================
 const MODEL_COLORS = {
   'gemini-3.5-flash':     '#4ade80',
@@ -504,27 +378,25 @@ const MODEL_COLORS = {
   'gemini-2.5-pro':       '#a78bfa',
 };
 const MODEL_META = {
-  'gemini-3.5-flash':     { label: '3.5 Flash',      rpm: 15, rpd: 1500 },
-  'gemini-3.1-flash-lite':{ label: '3.1 Flash-Lite', rpm: 30, rpd: 1500 },
-  'gemini-2.5-flash':     { label: '2.5 Flash',      rpm: 10, rpd: 250  },
-  'gemini-2.5-flash-lite':{ label: '2.5 Flash-Lite', rpm: 15, rpd: 1000 },
-  'gemini-2.5-pro':       { label: '2.5 Pro',        rpm: 5,  rpd: 100  },
+  'gemini-3.5-flash':     { label:'3.5 Flash',      rpm:15, rpd:1500 },
+  'gemini-3.1-flash-lite':{ label:'3.1 Flash-Lite', rpm:30, rpd:1500 },
+  'gemini-2.5-flash':     { label:'2.5 Flash',      rpm:10, rpd:250  },
+  'gemini-2.5-flash-lite':{ label:'2.5 Flash-Lite', rpm:15, rpd:1000 },
+  'gemini-2.5-pro':       { label:'2.5 Pro',        rpm:5,  rpd:100  },
 };
-const ALL_MODELS = Object.keys(MODEL_COLORS);
+const SIZE_LABELS = { small:'小', medium:'中', large:'大' };
+const ALL_MODELS  = Object.keys(MODEL_COLORS);
 
 let state = {
-  gasUrl:       localStorage.getItem('gasUrl') || '',
-  currentPeriod:'day',
-  currentModel: 'all',
-  rawData:      [],
-  settings:     {
-    enabled_models: ALL_MODELS,
-    interval_hours: 1,
-    sizes: ['small','medium','large']
-  }
+  gasUrl:        localStorage.getItem('gasUrl') || '',
+  currentPeriod: 'day',
+  currentModel:  'all',
+  historyPeriod: 'day',
+  rawData:       [],
+  settings: { enabled_models: ALL_MODELS, interval_hours: 1, sizes: ['small','medium','large'], time_slot: '0-12' },
+  timeSlot12_24: false,
+  pollInterval:  null,
 };
-
-// Chart instances
 let charts = {};
 
 // ============================================================
@@ -536,11 +408,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initModelFilter();
   initSettingsDrawer();
   initButtons();
-
-  if (state.gasUrl) {
-    loadData();
-    loadSettings();
-  }
+  initHistory();
+  initProgressModal();
+  if (state.gasUrl) { loadData(); loadSettings(); }
 });
 
 function initGASBanner() {
@@ -548,18 +418,14 @@ function initGASBanner() {
   const input  = document.getElementById('gas-url-input');
   input.value  = state.gasUrl;
   if (state.gasUrl) banner.style.display = 'none';
-
   document.getElementById('save-gas-url-btn').addEventListener('click', () => {
     const url = input.value.trim();
-    if (!url.startsWith('https://script.google.com')) {
-      showToast('正しいGAS URLを入力してください', 'error'); return;
-    }
+    if (!url.startsWith('https://script.google.com')) { showToast('正しいGAS URLを入力してください','error'); return; }
     state.gasUrl = url;
     localStorage.setItem('gasUrl', url);
     banner.style.display = 'none';
-    showToast('GAS URL を保存しました', 'success');
-    loadData();
-    loadSettings();
+    showToast('GAS URLを保存しました','success');
+    loadData(); loadSettings();
   });
 }
 
@@ -588,21 +454,18 @@ function initModelFilter() {
 
 function renderModelChips() {
   const container = document.getElementById('model-filter');
-  // 既存モデルチップ削除（全モデルチップは残す）
   container.querySelectorAll('.model-chip:not([data-model="all"])').forEach(c => c.remove());
   state.settings.enabled_models.forEach(model => {
     const color = MODEL_COLORS[model] || '#94a3b8';
-    const btn = document.createElement('button');
+    const btn   = document.createElement('button');
     btn.className = 'model-chip';
     btn.dataset.model = model;
     btn.style.setProperty('--chip-color', color);
     btn.textContent = MODEL_META[model]?.label || model;
     container.appendChild(btn);
   });
-  // 現在の選択を維持
-  const active = container.querySelector(`[data-model="${state.currentModel}"]`) ||
-                 container.querySelector('[data-model="all"]');
-  active.classList.add('active');
+  const active = container.querySelector(`[data-model="${state.currentModel}"]`) || container.querySelector('[data-model="all"]');
+  if (active) active.classList.add('active');
 }
 
 function initButtons() {
@@ -610,10 +473,12 @@ function initButtons() {
   document.getElementById('run-now-btn').addEventListener('click', runNow);
 }
 
+// ============================================================
+// 設定ドロワー
+// ============================================================
 function initSettingsDrawer() {
   const overlay = document.getElementById('drawer-overlay');
   const drawer  = document.getElementById('settings-drawer');
-
   document.getElementById('settings-btn').addEventListener('click', () => {
     overlay.classList.add('open'); drawer.classList.add('open');
     renderSettingsUI();
@@ -622,15 +487,41 @@ function initSettingsDrawer() {
   overlay.addEventListener('click', close);
   document.getElementById('close-drawer-btn').addEventListener('click', close);
   document.getElementById('cancel-settings-btn').addEventListener('click', close);
-
-  // サイズチェックボックス
   document.getElementById('size-checkboxes').addEventListener('click', e => {
     const sc = e.target.closest('.size-check');
-    if (!sc) return;
-    sc.classList.toggle('active');
+    if (sc) sc.classList.toggle('active');
+  });
+
+  // 時間帯トグル
+  document.getElementById('time-slot-toggle').addEventListener('click', () => {
+    state.timeSlot12_24 = !state.timeSlot12_24;
+    updateTimeSlotUI();
   });
 
   document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+}
+
+function updateTimeSlotUI() {
+  const sw    = document.getElementById('time-slot-switch');
+  const label = document.getElementById('time-slot-label');
+  const sub   = document.getElementById('time-slot-sub');
+  const toggle= document.getElementById('time-slot-toggle');
+  if (state.timeSlot12_24) {
+    sw.style.background = 'var(--accent)';
+    sw.style.borderColor= 'var(--accent)';
+    sw.style.setProperty('--after-left','18px');
+    label.textContent = '12〜24時';
+    sub.textContent   = 'チェックを外すと0〜12時に戻ります';
+    toggle.style.borderColor = 'var(--accent)';
+  } else {
+    sw.style.background = '';
+    sw.style.borderColor= '';
+    label.textContent = '0〜12時（デフォルト）';
+    sub.textContent   = 'チェックで12〜24時に切り替え';
+    toggle.style.borderColor = '';
+  }
+  // トグルスイッチのつまみ位置をCSSで制御
+  sw.innerHTML = `<span style="position:absolute;top:2px;left:${state.timeSlot12_24?'18':'2'}px;width:14px;height:14px;border-radius:50%;background:${state.timeSlot12_24?'#0b1a0f':'var(--text-muted)'};transition:left .15s;"></span>`;
 }
 
 function renderSettingsUI() {
@@ -643,55 +534,181 @@ function renderSettingsUI() {
     const div = document.createElement('div');
     div.className = `model-toggle ${isActive ? 'active' : ''}`;
     div.dataset.model = model;
-    div.innerHTML = `
-      <div>
-        <div class="model-toggle-name">${model}</div>
-        <div class="model-toggle-meta">RPM: ${meta.rpm || '?'} / RPD: ${meta.rpd || '?'} ${model.includes('pro') ? '⚠️小のみ' : ''}</div>
-      </div>
-      <div class="toggle-switch"></div>`;
+    div.innerHTML = `<div><div class="model-toggle-name">${model}</div><div class="model-toggle-meta">RPM:${meta.rpm||'?'} / RPD:${meta.rpd||'?'}${model.includes('pro')?' ⚠️小のみ':''}</div></div><div class="toggle-switch"></div>`;
     div.addEventListener('click', () => div.classList.toggle('active'));
     list.appendChild(div);
   });
-
-  // 測定規模
+  // 規模
   document.querySelectorAll('.size-check').forEach(sc => {
     sc.classList.toggle('active', state.settings.sizes.includes(sc.dataset.size));
   });
-
   // 間隔
   document.getElementById('interval-select').value = state.settings.interval_hours;
+  // 時間帯
+  state.timeSlot12_24 = state.settings.time_slot === '12-24';
+  updateTimeSlotUI();
 }
 
 async function saveSettings() {
-  if (!state.gasUrl) { showToast('先にGAS URLを設定してください', 'error'); return; }
-
-  const models = [...document.querySelectorAll('.model-toggle.active')].map(d => d.dataset.model);
-  const sizes  = [...document.querySelectorAll('.size-check.active')].map(d => d.dataset.size);
+  if (!state.gasUrl) { showToast('先にGAS URLを設定してください','error'); return; }
+  const models   = [...document.querySelectorAll('.model-toggle.active')].map(d => d.dataset.model);
+  const sizes    = [...document.querySelectorAll('.size-check.active')].map(d => d.dataset.size);
   const interval = document.getElementById('interval-select').value;
-
-  if (models.length === 0) { showToast('1つ以上のモデルを選択してください', 'error'); return; }
-  if (sizes.length === 0)  { showToast('1つ以上の規模を選択してください', 'error'); return; }
+  const timeSlot = state.timeSlot12_24 ? '12-24' : '0-12';
+  if (!models.length) { showToast('1つ以上のモデルを選択してください','error'); return; }
+  if (!sizes.length)  { showToast('1つ以上の規模を選択してください','error'); return; }
 
   const btn = document.getElementById('save-settings-btn');
   btn.disabled = true; btn.textContent = '保存中...';
   try {
-    const url = `${state.gasUrl}?action=saveSettings&models=${models.join(',')}&sizes=${sizes.join(',')}&interval=${interval}`;
+    const url = `${state.gasUrl}?action=saveSettings&models=${models.join(',')}&sizes=${sizes.join(',')}&interval=${interval}&time_slot=${timeSlot}`;
     const res = await fetchGAS(url);
     if (res.success) {
-      state.settings = { enabled_models: models, interval_hours: parseInt(interval), sizes };
+      state.settings = { enabled_models: models, interval_hours: parseInt(interval), sizes, time_slot: timeSlot };
       renderModelChips();
       document.getElementById('drawer-overlay').classList.remove('open');
       document.getElementById('settings-drawer').classList.remove('open');
-      showToast('設定を保存しました', 'success');
+      showToast('設定を保存しました','success');
       loadData();
-    } else {
-      showToast('保存に失敗しました: ' + (res.error || ''), 'error');
-    }
+    } else { showToast('保存失敗: '+(res.error||''),'error'); }
+  } catch(e) { showToast('通信エラー: '+e.message,'error'); }
+  finally { btn.disabled = false; btn.textContent = '保存して反映'; }
+}
+
+// ============================================================
+// 実行履歴
+// ============================================================
+function initHistory() {
+  const toggle = document.getElementById('history-toggle');
+  const body   = document.getElementById('history-body');
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('open');
+    body.classList.toggle('open');
+    if (body.classList.contains('open')) loadHistory();
+  });
+  document.querySelectorAll('.history-period-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.history-period-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.historyPeriod = tab.dataset.hperiod;
+      loadHistory();
+    });
+  });
+}
+
+async function loadHistory() {
+  if (!state.gasUrl) return;
+  const wrap = document.getElementById('history-table-wrap');
+  wrap.innerHTML = '<div class="history-empty">読み込み中...</div>';
+  try {
+    const res = await fetchGAS(`${state.gasUrl}?action=getHistory&period=${state.historyPeriod}`);
+    renderHistoryTable(res.history || []);
   } catch(e) {
-    showToast('通信エラー: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '保存して反映';
+    wrap.innerHTML = '<div class="history-empty">読み込み失敗</div>';
   }
+}
+
+function renderHistoryTable(history) {
+  const wrap = document.getElementById('history-table-wrap');
+  if (!history.length) { wrap.innerHTML = '<div class="history-empty">この期間の履歴はありません</div>'; return; }
+
+  const sorted = [...history].sort((a,b) => b.timestamp - a.timestamp);
+  const rows = sorted.map(h => {
+    const dt   = new Date(h.timestamp);
+    const date = dt.toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit' });
+    const time = dt.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+    const rate = h.total ? Math.round(h.success / h.total * 100) : 0;
+    return `<tr>
+      <td>${date} ${time}</td>
+      <td>${h.total}</td>
+      <td class="badge-success">${h.success}</td>
+      <td class="badge-error">${h.failed}</td>
+      <td style="color:${rate>=75?'var(--accent)':rate>=50?'var(--warn)':'var(--danger)'}">${rate}%</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table class="history-table">
+    <thead><tr><th>実行日時</th><th>総数</th><th>成功</th><th>失敗</th><th>成功率</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+// ============================================================
+// 進捗モーダル
+// ============================================================
+function initProgressModal() {
+  document.getElementById('close-modal-btn').addEventListener('click', () => {
+    document.getElementById('progress-modal').classList.remove('open');
+    if (state.pollInterval) { clearInterval(state.pollInterval); state.pollInterval = null; }
+  });
+}
+
+async function runNow() {
+  if (!state.gasUrl) { showToast('先にGAS URLを設定してください','error'); return; }
+  const btn = document.getElementById('run-now-btn');
+  btn.disabled = true; btn.textContent = '起動中...';
+
+  try {
+    const res = await fetchGAS(`${state.gasUrl}?action=runNow`);
+    if (res.success) {
+      openProgressModal(res.tasks || []);
+      startPolling();
+    } else { showToast('測定開始失敗: '+(res.error||''),'error'); }
+  } catch(e) { showToast('通信エラー: '+e.message,'error'); }
+  finally { btn.disabled = false; btn.textContent = '▶ 今すぐ測定'; }
+}
+
+function openProgressModal(tasks) {
+  const modal = document.getElementById('progress-modal');
+  const list  = document.getElementById('progress-list');
+  modal.classList.add('open');
+  document.getElementById('modal-progress-fill').style.width = '0%';
+  document.getElementById('modal-summary').textContent = '測定開始中...';
+  document.getElementById('close-modal-btn').disabled = true;
+
+  list.innerHTML = tasks.map(t => `
+    <div class="progress-item" id="prog-${t.model}-${t.size}">
+      <div class="progress-item-left">
+        <div class="progress-model">${t.model}</div>
+        <div class="progress-size">${SIZE_LABELS[t.size] || t.size}サイズ</div>
+      </div>
+      <div class="progress-status status-pending" id="prog-status-${t.model}-${t.size}">⏳ 待機中</div>
+    </div>`).join('');
+}
+
+function startPolling() {
+  if (state.pollInterval) clearInterval(state.pollInterval);
+  state.pollInterval = setInterval(async () => {
+    try {
+      const res = await fetchGAS(`${state.gasUrl}?action=getProgress`);
+      updateProgressModal(res.tasks || [], res.running);
+      if (!res.running) {
+        clearInterval(state.pollInterval);
+        state.pollInterval = null;
+        document.getElementById('close-modal-btn').disabled = false;
+        document.getElementById('modal-subtitle').textContent = '測定が完了しました';
+        loadData();
+        loadHistory();
+      }
+    } catch(e) { /* サイレント */ }
+  }, 3000);
+}
+
+function updateProgressModal(tasks, running) {
+  const done  = tasks.filter(t => t.status === 'done' || t.status === 'error').length;
+  const total = tasks.length;
+  const pct   = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('modal-progress-fill').style.width = pct + '%';
+  document.getElementById('modal-summary').textContent = `${done} / ${total} 完了 (${pct}%)`;
+
+  tasks.forEach(t => {
+    const el = document.getElementById(`prog-status-${t.model}-${t.size}`);
+    if (!el) return;
+    if (t.status === 'pending') { el.className = 'progress-status status-pending'; el.textContent = '⏳ 待機中'; }
+    else if (t.status === 'running') { el.className = 'progress-status status-running'; el.textContent = '⚡ 測定中'; }
+    else if (t.status === 'done')    { el.className = 'progress-status status-done';    el.textContent = '✅ 完了'; }
+    else if (t.status === 'error')   { el.className = 'progress-status status-error';   el.textContent = '❌ エラー'; }
+  });
 }
 
 // ============================================================
@@ -701,17 +718,13 @@ async function loadData() {
   if (!state.gasUrl) return;
   setLoadingAll(true);
   try {
-    const url = `${state.gasUrl}?action=getData&period=${state.currentPeriod}&model=${state.currentModel}`;
-    const res = await fetchGAS(url);
+    const res = await fetchGAS(`${state.gasUrl}?action=getData&period=${state.currentPeriod}&model=${state.currentModel}`);
     state.rawData = res.data || [];
     document.getElementById('last-updated-text').textContent = '最終更新: ' + new Date().toLocaleTimeString('ja-JP');
     updateStats();
     updateCharts();
-  } catch(e) {
-    showToast('データ取得失敗: ' + e.message, 'error');
-  } finally {
-    setLoadingAll(false);
-  }
+  } catch(e) { showToast('データ取得失敗: '+e.message,'error'); }
+  finally { setLoadingAll(false); }
 }
 
 async function loadSettings() {
@@ -720,22 +733,7 @@ async function loadSettings() {
     const res = await fetchGAS(`${state.gasUrl}?action=getSettings`);
     state.settings = res;
     renderModelChips();
-  } catch(e) { /* サイレント */ }
-}
-
-async function runNow() {
-  if (!state.gasUrl) { showToast('先にGAS URLを設定してください', 'error'); return; }
-  const btn = document.getElementById('run-now-btn');
-  btn.disabled = true; btn.textContent = '測定中...';
-  try {
-    const res = await fetchGAS(`${state.gasUrl}?action=runNow`);
-    showToast(res.message || '測定を開始しました', 'success');
-    setTimeout(() => loadData(), 30000); // 30秒後にデータ再取得
-  } catch(e) {
-    showToast('測定開始失敗: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '▶ 今すぐ測定';
-  }
+  } catch(e) {}
 }
 
 async function fetchGAS(url) {
@@ -746,39 +744,33 @@ async function fetchGAS(url) {
 
 function setLoadingAll(show) {
   ['heatmap','success','latency','size','error'].forEach(id => {
-    const el = document.getElementById(id + '-loading');
+    const el = document.getElementById(id+'-loading');
     if (el) el.classList.toggle('show', show);
   });
 }
 
 // ============================================================
-// 統計更新
+// 統計
 // ============================================================
 function updateStats() {
-  const data = getFilteredData();
-  const total = data.length;
-  const success = data.filter(d => d.status === 'success').length;
-  const rateLimit = data.filter(d => d.status === 'rate_limit').length;
-  const smallSuccess = data.filter(d => d.status === 'success' && d.size === 'small');
-  const avgLatency = smallSuccess.length
-    ? Math.round(smallSuccess.reduce((s, d) => s + d.latency_ms, 0) / smallSuccess.length)
-    : null;
-
-  document.getElementById('stat-success-rate').textContent =
-    total ? Math.round(success / total * 100) + '%' : '--';
-  document.getElementById('stat-avg-latency').textContent =
-    avgLatency !== null ? avgLatency + 'ms' : '--';
-  document.getElementById('stat-rate-limit').textContent = rateLimit || '--';
-  document.getElementById('stat-total').textContent = total || '--';
+  const data       = getFilteredData();
+  const total      = data.length;
+  const success    = data.filter(d => d.status==='success').length;
+  const rateLimit  = data.filter(d => d.status==='rate_limit').length;
+  const smallSucc  = data.filter(d => d.status==='success' && d.size==='small');
+  const avgLatency = smallSucc.length ? Math.round(smallSucc.reduce((s,d)=>s+d.latency_ms,0)/smallSucc.length) : null;
+  document.getElementById('stat-success-rate').textContent = total ? Math.round(success/total*100)+'%' : '--';
+  document.getElementById('stat-avg-latency').textContent  = avgLatency!==null ? avgLatency+'ms' : '--';
+  document.getElementById('stat-rate-limit').textContent   = rateLimit || '--';
+  document.getElementById('stat-total').textContent        = total || '--';
 }
 
 function getFilteredData() {
-  if (state.currentModel === 'all') return state.rawData;
-  return state.rawData.filter(d => d.model === state.currentModel);
+  return state.currentModel==='all' ? state.rawData : state.rawData.filter(d=>d.model===state.currentModel);
 }
 
 // ============================================================
-// チャート更新
+// チャート
 // ============================================================
 function updateCharts() {
   renderHeatmap();
@@ -788,283 +780,123 @@ function updateCharts() {
   renderErrorChart();
 }
 
-// ── ヒートマップ ──────────────────────────────────────────
 function renderHeatmap() {
-  const models = state.currentModel === 'all'
-    ? state.settings.enabled_models
-    : [state.currentModel];
-  document.getElementById('heatmap-model-label').textContent =
-    state.currentModel === 'all' ? '全モデル' : (MODEL_META[state.currentModel]?.label || state.currentModel);
-
+  const models = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
+  document.getElementById('heatmap-model-label').textContent = state.currentModel==='all' ? '全モデル' : (MODEL_META[state.currentModel]?.label||state.currentModel);
   const container = document.getElementById('heatmap-container');
   container.innerHTML = '';
-
   const grid = document.createElement('div');
   grid.className = 'heatmap-grid';
-
-  // ヘッダー行
-  const emptyHeader = document.createElement('div');
-  grid.appendChild(emptyHeader);
-  for (let h = 0; h < 24; h++) {
-    const cell = document.createElement('div');
-    cell.className = 'hm-header';
-    cell.textContent = h;
-    grid.appendChild(cell);
+  grid.appendChild(document.createElement('div'));
+  for (let h=0;h<24;h++) {
+    const c=document.createElement('div'); c.className='hm-header'; c.textContent=h; grid.appendChild(c);
   }
-
-  // モデル別行
   models.forEach(model => {
-    const label = document.createElement('div');
-    label.className = 'hm-label';
-    label.textContent = MODEL_META[model]?.label || model.replace('gemini-','');
-    grid.appendChild(label);
-
-    for (let h = 0; h < 24; h++) {
-      const entries = state.rawData.filter(d => d.model === model && d.jst_hour === h);
-      const total   = entries.length;
-      const success = entries.filter(d => d.status === 'success').length;
-      const rateLimitRatio = total ? entries.filter(d => d.status === 'rate_limit').length / total : 0;
-      const successRate = total ? success / total : null;
-
-      const cell = document.createElement('div');
-      cell.className = 'hm-cell';
-      cell.style.background = getHeatColor(successRate, rateLimitRatio);
-
-      const tip = document.createElement('div');
-      tip.className = 'hm-tooltip';
-      tip.innerHTML = total
-        ? `${h}:00 JST<br>成功: ${success}/${total} (${Math.round(successRate*100)}%)<br>レート制限: ${entries.filter(d=>d.status==='rate_limit').length}件`
-        : `${h}:00 JST<br>データなし`;
-      cell.appendChild(tip);
-      grid.appendChild(cell);
+    const label=document.createElement('div'); label.className='hm-label';
+    label.textContent=(MODEL_META[model]?.label||model).replace('gemini-',''); grid.appendChild(label);
+    for (let h=0;h<24;h++) {
+      const entries=state.rawData.filter(d=>d.model===model&&d.jst_hour===h);
+      const total=entries.length; const success=entries.filter(d=>d.status==='success').length;
+      const rlRatio=total?entries.filter(d=>d.status==='rate_limit').length/total:0;
+      const rate=total?success/total:null;
+      const cell=document.createElement('div'); cell.className='hm-cell';
+      cell.style.background=getHeatColor(rate,rlRatio);
+      const tip=document.createElement('div'); tip.className='hm-tooltip';
+      tip.innerHTML=total?`${h}:00 JST<br>成功:${success}/${total}(${Math.round(rate*100)}%)<br>429:${entries.filter(d=>d.status==='rate_limit').length}件`:`${h}:00 JST<br>データなし`;
+      cell.appendChild(tip); grid.appendChild(cell);
     }
   });
-
   container.appendChild(grid);
+  document.getElementById('heatmap-loading').classList.remove('show');
 }
 
-function getHeatColor(successRate, rateLimitRatio) {
-  if (successRate === null) return '#1a2234';
-  if (rateLimitRatio > 0.5) return '#b45309'; // amber – rate limit heavy
-  if (successRate >= 0.75) return '#4ade80';
-  if (successRate >= 0.5)  return '#16a34a';
-  if (successRate >= 0.25) return '#166534';
+function getHeatColor(r,rl) {
+  if (r===null) return '#1a2234';
+  if (rl>0.5) return '#b45309';
+  if (r>=0.75) return '#4ade80';
+  if (r>=0.5)  return '#16a34a';
+  if (r>=0.25) return '#166534';
   return '#14532d';
 }
 
-// ── 時系列成功率 ─────────────────────────────────────────
 function renderSuccessChart() {
-  const buckets  = buildTimeBuckets();
-  const models   = state.currentModel === 'all'
-    ? state.settings.enabled_models : [state.currentModel];
-
+  const buckets = buildTimeBuckets();
+  const models  = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
   const datasets = models.map(model => {
-    const color = MODEL_COLORS[model] || '#94a3b8';
-    const data  = buckets.map(b => {
-      const entries = b.data.filter(d => d.model === model);
-      if (!entries.length) return null;
-      return Math.round(entries.filter(d => d.status === 'success').length / entries.length * 100);
-    });
-    return {
-      label: MODEL_META[model]?.label || model,
-      data, borderColor: color, backgroundColor: color + '20',
-      fill: false, tension: 0.3, pointRadius: 3, spanGaps: true
-    };
+    const color = MODEL_COLORS[model]||'#94a3b8';
+    return { label:MODEL_META[model]?.label||model, data:buckets.map(b=>{ const e=b.data.filter(d=>d.model===model); return e.length?Math.round(e.filter(d=>d.status==='success').length/e.length*100):null; }), borderColor:color, backgroundColor:color+'20', fill:false, tension:0.3, pointRadius:3, spanGaps:true };
   });
-
-  renderLineChart('successChart', 'success-loading', buckets.map(b => b.label), datasets, {
-    y: { min: 0, max: 100, title: { display: true, text: '成功率 (%)', color: '#64748b', font: { size: 11 } } }
-  });
+  renderLineChart('successChart','success-loading',buckets.map(b=>b.label),datasets,{ y:{ min:0, max:100, title:{display:true,text:'成功率(%)',color:'#64748b',font:{size:11}} } });
 }
 
-// ── レイテンシ推移 ───────────────────────────────────────
 function renderLatencyChart() {
   const buckets = buildTimeBuckets();
-  const models  = state.currentModel === 'all'
-    ? state.settings.enabled_models : [state.currentModel];
-
+  const models  = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
   const datasets = models.map(model => {
-    const color = MODEL_COLORS[model] || '#94a3b8';
-    const data  = buckets.map(b => {
-      const entries = b.data.filter(d => d.model === model && d.status === 'success' && d.size === 'small');
-      if (!entries.length) return null;
-      return Math.round(entries.reduce((s, d) => s + d.latency_ms, 0) / entries.length);
-    });
-    return {
-      label: MODEL_META[model]?.label || model,
-      data, borderColor: color, backgroundColor: color + '20',
-      fill: false, tension: 0.3, pointRadius: 3, spanGaps: true
-    };
+    const color = MODEL_COLORS[model]||'#94a3b8';
+    return { label:MODEL_META[model]?.label||model, data:buckets.map(b=>{ const e=b.data.filter(d=>d.model===model&&d.status==='success'&&d.size==='small'); return e.length?Math.round(e.reduce((s,d)=>s+d.latency_ms,0)/e.length):null; }), borderColor:color, backgroundColor:color+'20', fill:false, tension:0.3, pointRadius:3, spanGaps:true };
   });
-
-  renderLineChart('latencyChart', 'latency-loading', buckets.map(b => b.label), datasets, {
-    y: { title: { display: true, text: 'レイテンシ (ms)', color: '#64748b', font: { size: 11 } } }
-  });
+  renderLineChart('latencyChart','latency-loading',buckets.map(b=>b.label),datasets,{ y:{ title:{display:true,text:'レイテンシ(ms)',color:'#64748b',font:{size:11}} } });
 }
 
-// ── 規模別成功率 ─────────────────────────────────────────
 function renderSizeChart() {
   const sizes  = ['small','medium','large'];
-  const sizeLabels = { small: '小', medium: '中', large: '大' };
-  const models = state.currentModel === 'all'
-    ? state.settings.enabled_models : [state.currentModel];
-
-  document.getElementById('size-chart-model').textContent =
-    state.currentModel === 'all' ? '全体' : (MODEL_META[state.currentModel]?.label || state.currentModel);
-
+  const models = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
+  document.getElementById('size-chart-model').textContent = state.currentModel==='all'?'全体':(MODEL_META[state.currentModel]?.label||state.currentModel);
   const datasets = models.map(model => {
-    const color = MODEL_COLORS[model] || '#94a3b8';
-    const data  = sizes.map(size => {
-      const entries = state.rawData.filter(d => d.model === model && d.size === size);
-      if (!entries.length) return 0;
-      return Math.round(entries.filter(d => d.status === 'success').length / entries.length * 100);
-    });
-    return {
-      label: MODEL_META[model]?.label || model,
-      data, backgroundColor: color + 'cc', borderColor: color, borderWidth: 1
-    };
+    const color = MODEL_COLORS[model]||'#94a3b8';
+    return { label:MODEL_META[model]?.label||model, data:sizes.map(size=>{ const e=state.rawData.filter(d=>d.model===model&&d.size===size); return e.length?Math.round(e.filter(d=>d.status==='success').length/e.length*100):0; }), backgroundColor:color+'cc', borderColor:color, borderWidth:1 };
   });
-
   destroyChart('sizeChart');
   const ctx = document.getElementById('sizeChart');
   document.getElementById('size-loading').classList.remove('show');
-  charts['sizeChart'] = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: sizes.map(s => sizeLabels[s]), datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
-      scales: {
-        x: { grid: { color: '#1f2d45' }, ticks: { color: '#64748b' } },
-        y: { min: 0, max: 100, grid: { color: '#1f2d45' }, ticks: { color: '#64748b' },
-             title: { display: true, text: '成功率 (%)', color: '#64748b', font: { size: 11 } } }
-      }
-    }
-  });
+  charts['sizeChart'] = new Chart(ctx, { type:'bar', data:{ labels:sizes.map(s=>SIZE_LABELS[s]), datasets }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{ x:{grid:{color:'#1f2d45'},ticks:{color:'#64748b'}}, y:{min:0,max:100,grid:{color:'#1f2d45'},ticks:{color:'#64748b'},title:{display:true,text:'成功率(%)',color:'#64748b',font:{size:11}}} } } });
 }
 
-// ── エラー種別 ───────────────────────────────────────────
 function renderErrorChart() {
   const data = getFilteredData();
-  const errorTypes = {};
-  data.filter(d => d.status !== 'success').forEach(d => {
-    const key = d.status === 'rate_limit' ? 'レート制限(429)' :
-                d.error_code?.includes('503') ? 'サービス停止(503)' :
-                d.error_code?.includes('NO_API_KEY') ? 'APIキー未設定' : 'その他エラー';
-    errorTypes[key] = (errorTypes[key] || 0) + 1;
+  const types = {};
+  data.filter(d=>d.status!=='success').forEach(d => {
+    const key = d.status==='rate_limit'?'レート制限(429)':d.error_code?.includes('503')?'サービス停止(503)':d.error_code?.includes('NO_API_KEY')?'APIキー未設定':'その他エラー';
+    types[key]=(types[key]||0)+1;
   });
-  const success = data.filter(d => d.status === 'success').length;
-  if (success > 0) errorTypes['成功'] = success;
-
-  const labels = Object.keys(errorTypes);
-  const values = Object.values(errorTypes);
-  const colors = labels.map(l =>
-    l === '成功' ? '#4ade80' :
-    l.includes('429') ? '#fbbf24' :
-    l.includes('503') ? '#f87171' :
-    l.includes('APIキー') ? '#f87171' : '#94a3b8'
-  );
-
+  const succ = data.filter(d=>d.status==='success').length;
+  if (succ>0) types['成功']=succ;
+  const labels=Object.keys(types), values=Object.values(types);
+  const colors=labels.map(l=>l==='成功'?'#4ade80':l.includes('429')?'#fbbf24':l.includes('503')?'#f87171':'#94a3b8');
   destroyChart('errorChart');
-  const ctx = document.getElementById('errorChart');
   document.getElementById('error-loading').classList.remove('show');
-  charts['errorChart'] = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 } }
-      },
-      cutout: '60%'
-    }
-  });
+  charts['errorChart'] = new Chart(document.getElementById('errorChart'), { type:'doughnut', data:{ labels, datasets:[{ data:values, backgroundColor:colors, borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11},boxWidth:12}}}, cutout:'60%' } });
 }
 
-// ============================================================
-// チャートヘルパー
-// ============================================================
 function buildTimeBuckets() {
-  const now    = Date.now();
-  const period = state.currentPeriod;
-  const buckets = [];
-
-  if (period === 'day') {
-    // 1時間毎 × 24
-    for (let i = 23; i >= 0; i--) {
-      const t   = now - i * 3600000;
-      const d   = new Date(t);
-      const end = t + 3600000;
-      buckets.push({
-        label: d.getHours() + ':00',
-        data:  state.rawData.filter(r => r.timestamp >= t && r.timestamp < end)
-      });
-    }
-  } else if (period === 'week') {
-    for (let i = 6; i >= 0; i--) {
-      const t   = now - i * 86400000;
-      const d   = new Date(t);
-      const end = t + 86400000;
-      buckets.push({
-        label: (d.getMonth()+1) + '/' + d.getDate(),
-        data:  state.rawData.filter(r => r.timestamp >= t && r.timestamp < end)
-      });
-    }
-  } else if (period === 'month') {
-    for (let i = 29; i >= 0; i--) {
-      const t   = now - i * 86400000;
-      const d   = new Date(t);
-      const end = t + 86400000;
-      buckets.push({
-        label: (d.getMonth()+1) + '/' + d.getDate(),
-        data:  state.rawData.filter(r => r.timestamp >= t && r.timestamp < end)
-      });
-    }
-  } else if (period === 'year') {
-    for (let i = 11; i >= 0; i--) {
-      const d   = new Date(now);
-      d.setDate(1); d.setMonth(d.getMonth() - i);
-      const end = new Date(d); end.setMonth(end.getMonth() + 1);
-      buckets.push({
-        label: (d.getMonth()+1) + '月',
-        data:  state.rawData.filter(r => r.timestamp >= d.getTime() && r.timestamp < end.getTime())
-      });
-    }
+  const now=Date.now(), period=state.currentPeriod, buckets=[];
+  if (period==='day') {
+    for (let i=23;i>=0;i--) { const t=now-i*3600000; const d=new Date(t); buckets.push({ label:d.getHours()+':00', data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+3600000) }); }
+  } else if (period==='week') {
+    for (let i=6;i>=0;i--) { const t=now-i*86400000; const d=new Date(t); buckets.push({ label:(d.getMonth()+1)+'/'+(d.getDate()), data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+86400000) }); }
+  } else if (period==='month') {
+    for (let i=29;i>=0;i--) { const t=now-i*86400000; const d=new Date(t); buckets.push({ label:(d.getMonth()+1)+'/'+(d.getDate()), data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+86400000) }); }
+  } else if (period==='year') {
+    for (let i=11;i>=0;i--) { const d=new Date(now); d.setDate(1); d.setMonth(d.getMonth()-i); const end=new Date(d); end.setMonth(end.getMonth()+1); buckets.push({ label:(d.getMonth()+1)+'月', data:state.rawData.filter(r=>r.timestamp>=d.getTime()&&r.timestamp<end.getTime()) }); }
   }
   return buckets;
 }
 
 function renderLineChart(canvasId, loadingId, labels, datasets, scalesExtra) {
   destroyChart(canvasId);
-  const ctx = document.getElementById(canvasId);
   document.getElementById(loadingId).classList.remove('show');
-  charts[canvasId] = new Chart(ctx, {
-    type: 'line',
-    data: { labels, datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
-      scales: {
-        x: { grid: { color: '#1f2d45' }, ticks: { color: '#64748b', maxTicksLimit: 12, font: { size: 10 } } },
-        y: { grid: { color: '#1f2d45' }, ticks: { color: '#64748b' }, ...scalesExtra?.y }
-      }
-    }
-  });
+  charts[canvasId] = new Chart(document.getElementById(canvasId), { type:'line', data:{ labels, datasets }, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{ x:{grid:{color:'#1f2d45'},ticks:{color:'#64748b',maxTicksLimit:12,font:{size:10}}}, y:{grid:{color:'#1f2d45'},ticks:{color:'#64748b'},...(scalesExtra?.y||{})} } } });
 }
 
-function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-}
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
 // ============================================================
 // Toast
 // ============================================================
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className   = `show ${type}`;
-  setTimeout(() => { t.className = ''; }, 3000);
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast'); t.textContent=msg; t.className=`show ${type}`;
+  setTimeout(()=>{ t.className=''; },3000);
 }
 </script>
 </body>
