@@ -43,13 +43,22 @@ h1 span{color:var(--accent);}
 #gas-url-input{flex:2;min-width:260px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:7px 12px;font-size:0.8rem;font-family:var(--font-mono);}
 #gas-url-input:focus{outline:none;border-color:var(--accent);}
 
-/* Stats */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;}
+/* ── 直近1週間ウィジェット枠 ── */
+.stats-widget{background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:16px;margin-bottom:24px;}
+.stats-widget-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.stats-widget-title{font-size:0.82rem;font-weight:700;color:var(--accent);letter-spacing:0.04em;}
+.stats-widget-date{font-size:0.72rem;color:var(--text-muted);font-family:var(--font-mono);}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-color,var(--accent));}
-.stat-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
-.stat-value{font-size:1.6rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-color,var(--accent));}
-.stat-sub{font-size:0.72rem;color:var(--text-muted);margin-top:3px;}
+.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.stat-label{font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;}
+.stat-help-btn{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:50%;width:18px;height:18px;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.stat-help-btn:hover{border-color:var(--accent);color:var(--accent);}
+.stat-value{font-size:1.5rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-color,var(--accent));}
+.stat-sub{font-size:0.7rem;color:var(--text-muted);margin-top:3px;}
+.stat-desc{display:none;font-size:0.72rem;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-top:8px;line-height:1.5;}
+.stat-desc.open{display:block;}
 
 /* Controls */
 .controls{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
@@ -63,29 +72,52 @@ h1 span{color:var(--accent);}
 
 /* Panel */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;}
-.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
 .panel-title{font-size:0.85rem;font-weight:700;color:var(--text-dim);letter-spacing:0.03em;}
 .panel-badge{font-size:0.68rem;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text-muted);font-family:var(--font-mono);}
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-@media(max-width:700px){.chart-grid{grid-template-columns:1fr;}}
 .chart-wrap{position:relative;height:220px;}
 
+/* ヒートマップ見方説明トグル */
+.hm-guide-toggle{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--text-muted);font-size:0.75rem;cursor:pointer;padding:4px 0;margin-bottom:10px;}
+.hm-guide-toggle:hover{color:var(--accent);}
+.hm-guide{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:0.78rem;line-height:1.8;color:var(--text-dim);}
+.hm-guide.open{display:block;}
+.hm-guide-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.hm-guide-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+
 /* Heatmap */
+.heatmap-section{margin-bottom:16px;}
+.heatmap-size-title{font-size:0.8rem;font-weight:700;color:var(--text-dim);margin:14px 0 6px;padding-left:2px;}
 .heatmap-wrap{overflow-x:auto;}
 .heatmap-grid{display:grid;grid-template-columns:80px repeat(24,1fr);gap:3px;min-width:700px;}
 .hm-label{font-size:0.68rem;color:var(--text-muted);display:flex;align-items:center;padding:2px 4px;font-family:var(--font-mono);}
 .hm-header{font-size:0.65rem;color:var(--text-muted);text-align:center;font-family:var(--font-mono);padding:2px 0;}
-.hm-cell{height:26px;border-radius:3px;background:var(--surface2);cursor:pointer;transition:transform .1s;position:relative;}
+.hm-cell{height:26px;border-radius:3px;cursor:pointer;transition:transform .1s;position:relative;}
 .hm-cell:hover{transform:scale(1.15);z-index:10;}
 .hm-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:0.72rem;white-space:nowrap;z-index:100;pointer-events:none;color:var(--text);}
 .hm-cell:hover .hm-tooltip{display:block;}
-.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:0.74rem;color:var(--text-muted);}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 
-/* History */
+/* Charts 3列 */
+.chart-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+@media(max-width:900px){.chart-grid-3{grid-template-columns:1fr;}}
+
+/* 比較モード */
+.compare-section{margin-top:16px;}
+.compare-toggle{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text);transition:border-color .15s;}
+.compare-toggle:hover{border-color:var(--accent);}
+.compare-toggle-title{font-size:0.85rem;font-weight:700;color:var(--text-dim);}
+.compare-arrow{transition:transform .25s;font-size:1rem;color:var(--text-muted);}
+.compare-toggle.open .compare-arrow{transform:rotate(180deg);}
+.compare-body{display:none;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:16px 20px;}
+.compare-body.open{display:block;}
+.compare-period-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.compare-period-tab{padding:5px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-muted);transition:all .15s;}
+.compare-period-tab.active{background:var(--accent);color:#0b1a0f;border-color:var(--accent);}
+.compare-chart-wrap{position:relative;height:280px;}
+
+/* 実行履歴 */
 .history-section{margin-top:16px;}
-.history-toggle{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text);}
+.history-toggle{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text);transition:border-color .15s;}
 .history-toggle:hover{border-color:var(--accent);}
 .history-toggle-title{font-size:0.85rem;font-weight:700;color:var(--text-dim);}
 .history-arrow{transition:transform .25s;font-size:1rem;color:var(--text-muted);}
@@ -109,7 +141,6 @@ h1 span{color:var(--accent);}
 .loading-overlay.show{display:flex;}
 .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:0.85rem;}
 
 /* Settings Drawer */
 .drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;}
@@ -134,33 +165,30 @@ h1 span{color:var(--accent);}
 .size-checkboxes{display:flex;gap:10px;}
 .size-check{flex:1;padding:9px;text-align:center;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-muted);transition:all .15s;user-select:none;}
 .size-check.active{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);}
-
-/* Time slot toggle */
 .time-slot-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s;margin-top:8px;}
 .time-slot-toggle:hover{border-color:var(--accent);}
 .time-slot-label{font-size:0.82rem;color:var(--text);}
 .time-slot-sub{font-size:0.7rem;color:var(--text-muted);margin-top:2px;}
-
 .drawer-footer{display:flex;gap:10px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);}
 
-/* Progress Modal */
 /* 測定中オーバーレイ */
 .measuring-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:20px;}
 .measuring-overlay.open{display:flex;}
 .measuring-spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
 .measuring-text{color:var(--text);font-size:0.95rem;font-weight:600;}
 .measuring-sub{color:var(--text-muted);font-size:0.78rem;}
+
 /* 完了モーダル */
 .done-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;align-items:center;justify-content:center;}
 .done-modal-overlay.open{display:flex;}
 .done-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 36px;width:360px;max-width:95vw;text-align:center;}
 .done-modal-icon{font-size:2.5rem;margin-bottom:12px;}
-.done-modal-title{font-size:1.1rem;font-weight:700;margin-bottom:8px;}
-.done-modal-body{font-size:0.82rem;color:var(--text-muted);margin-bottom:20px;line-height:1.7;}
+.done-modal-title{font-size:1.1rem;font-weight:700;margin-bottom:16px;}
 .done-modal-stats{display:flex;gap:12px;justify-content:center;margin-bottom:20px;}
 .done-stat{flex:1;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);text-align:center;}
 .done-stat-value{font-size:1.3rem;font-weight:700;font-family:var(--font-mono);}
 .done-stat-label{font-size:0.68rem;color:var(--text-muted);margin-top:2px;}
+.done-modal-body{font-size:0.82rem;color:var(--text-muted);margin-bottom:20px;}
 
 /* Toast */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 20px;font-size:0.82rem;z-index:500;transition:transform .3s ease;pointer-events:none;}
@@ -197,31 +225,53 @@ h1 span{color:var(--accent);}
     <button class="btn btn-primary btn-sm" id="save-gas-url-btn">保存</button>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card" style="--accent-color:var(--accent)">
-      <div class="stat-label">成功率（全体）</div>
-      <div class="stat-value" id="stat-success-rate">--</div>
-      <div class="stat-sub">直近期間</div>
+  <!-- 直近1週間ウィジェット枠 -->
+  <div class="stats-widget">
+    <div class="stats-widget-header">
+      <span class="stats-widget-title">📊 直近1週間の平均値</span>
+      <span class="stats-widget-date" id="stats-date-range">-- 〜 --</span>
     </div>
-    <div class="stat-card" style="--accent-color:var(--accent2)">
-      <div class="stat-label">平均レイテンシ</div>
-      <div class="stat-value" id="stat-avg-latency">--</div>
-      <div class="stat-sub">成功リクエスト（小）</div>
-    </div>
-    <div class="stat-card" style="--accent-color:var(--warn)">
-      <div class="stat-label">レート制限</div>
-      <div class="stat-value" id="stat-rate-limit">--</div>
-      <div class="stat-sub">直近期間</div>
-    </div>
-    <div class="stat-card" style="--accent-color:var(--text-dim)">
-      <div class="stat-label">総測定数</div>
-      <div class="stat-value" id="stat-total">--</div>
-      <div class="stat-sub">直近期間</div>
+    <div class="stats-row">
+      <div class="stat-card" style="--accent-color:var(--accent)">
+        <div class="stat-header">
+          <div class="stat-label">成功率（全体）</div>
+          <button class="stat-help-btn" data-desc="success-desc">?</button>
+        </div>
+        <div class="stat-value" id="stat-success-rate">--</div>
+        <div class="stat-sub">全モデル・全規模</div>
+        <div class="stat-desc" id="success-desc">測定したリクエストのうち、正常にレスポンスが返った割合です。成功率が高いほどその時間帯にAPIが安定して利用できています。</div>
+      </div>
+      <div class="stat-card" style="--accent-color:var(--accent2)">
+        <div class="stat-header">
+          <div class="stat-label">平均レイテンシ</div>
+          <button class="stat-help-btn" data-desc="latency-desc">?</button>
+        </div>
+        <div class="stat-value" id="stat-avg-latency">--</div>
+        <div class="stat-sub">小プロンプト基準</div>
+        <div class="stat-desc" id="latency-desc">小プロンプト（1+1=?）で成功したリクエストの平均応答時間です。値が小さいほどAPIの応答が速い状態です。</div>
+      </div>
+      <div class="stat-card" style="--accent-color:var(--warn)">
+        <div class="stat-header">
+          <div class="stat-label">レート制限回数</div>
+          <button class="stat-help-btn" data-desc="ratelimit-desc">?</button>
+        </div>
+        <div class="stat-value" id="stat-rate-limit">--</div>
+        <div class="stat-sub">429エラー件数</div>
+        <div class="stat-desc" id="ratelimit-desc">429エラー（Too Many Requests）が発生した回数です。無料枠のRPD・RPM上限を超えた際に発生します。回数が多い場合は測定間隔を広げてください。</div>
+      </div>
+      <div class="stat-card" style="--accent-color:var(--text-dim)">
+        <div class="stat-header">
+          <div class="stat-label">総測定数</div>
+          <button class="stat-help-btn" data-desc="total-desc">?</button>
+        </div>
+        <div class="stat-value" id="stat-total">--</div>
+        <div class="stat-sub">1週間の合計</div>
+        <div class="stat-desc" id="total-desc">直近1週間に実行された測定リクエストの総数です。全モデル×全規模の合計件数です。</div>
+      </div>
     </div>
   </div>
 
-  <!-- Controls -->
+  <!-- Controls（グラフ・ヒートマップ用） -->
   <div class="controls">
     <div class="period-tabs" id="period-tabs">
       <button class="period-tab active" data-period="day">24h</button>
@@ -235,47 +285,65 @@ h1 span{color:var(--accent);}
     <div class="spacer"></div>
   </div>
 
-  <!-- Heatmap -->
+  <!-- ヒートマップ（小・中・大） -->
   <div class="panel" style="margin-bottom:16px;">
     <div class="panel-header">
-      <span class="panel-title">🕐 時間帯別 成功率ヒートマップ（JST）</span>
+      <span class="panel-title">🕐 時間帯別 利用可否ヒートマップ（JST）</span>
       <span class="panel-badge" id="heatmap-model-label">全モデル</span>
     </div>
+
+    <!-- 見方説明トグル -->
+    <button class="hm-guide-toggle" id="hm-guide-toggle">▶ 見方の説明を見る</button>
+    <div class="hm-guide" id="hm-guide">
+      <div style="margin-bottom:8px;font-weight:600;color:var(--text);">📖 ヒートマップの見方</div>
+      <div><strong>縦軸：</strong>モデル名</div>
+      <div><strong>横軸：</strong>時間帯（0〜23時 JST）</div>
+      <div style="margin-top:8px;margin-bottom:4px;font-weight:600;color:var(--text);">色の意味：</div>
+      <div class="hm-guide-row"><div class="hm-guide-dot" style="background:#4ade80"></div><strong style="color:#4ade80">✅ 安定</strong>：成功率75%以上。ほぼ確実に利用できます</div>
+      <div class="hm-guide-row"><div class="hm-guide-dot" style="background:#fbbf24"></div><strong style="color:#fbbf24">⚠️ 不安定</strong>：成功率1〜75%。利用できる場合もあります</div>
+      <div class="hm-guide-row"><div class="hm-guide-dot" style="background:#f87171"></div><strong style="color:#f87171">❌ 利用不可</strong>：成功率0%。この時間帯は利用を避けてください</div>
+      <div class="hm-guide-row"><div class="hm-guide-dot" style="background:#1a2234"></div><span style="color:var(--text-muted)">⬛ データなし：まだ測定が実行されていない時間帯です</span></div>
+    </div>
+
     <div class="loading-overlay" id="heatmap-loading"><div class="spinner"></div></div>
-    <div class="heatmap-wrap" id="heatmap-container"><div class="empty-state">データを取得中...</div></div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#1a2234"></div>データなし</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#14532d"></div>0〜25%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#166534"></div>25〜50%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>50〜75%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>75〜100%</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>レート制限多発</div>
+    <div id="heatmap-container"></div>
+  </div>
+
+  <!-- グラフ（小・中・大の時系列成功率） -->
+  <div class="chart-grid-3">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">📈 小プロンプト 成功率</span><span class="panel-badge">モデル別</span></div>
+      <div class="loading-overlay" id="small-loading"><div class="spinner"></div></div>
+      <div class="chart-wrap"><canvas id="smallChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">📈 中プロンプト 成功率</span><span class="panel-badge">モデル別</span></div>
+      <div class="loading-overlay" id="medium-loading"><div class="spinner"></div></div>
+      <div class="chart-wrap"><canvas id="mediumChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">📈 大プロンプト 成功率</span><span class="panel-badge">モデル別</span></div>
+      <div class="loading-overlay" id="large-loading"><div class="spinner"></div></div>
+      <div class="chart-wrap"><canvas id="largeChart"></canvas></div>
     </div>
   </div>
 
-  <!-- Charts -->
-  <div class="chart-grid">
-    <div class="panel">
-      <div class="panel-header"><span class="panel-title">📈 時系列 成功率</span><span class="panel-badge">モデル別</span></div>
-      <div class="loading-overlay" id="success-loading"><div class="spinner"></div></div>
-      <div class="chart-wrap"><canvas id="successChart"></canvas></div>
-    </div>
-    <div class="panel">
-      <div class="panel-header"><span class="panel-title">⏱ 平均レイテンシ推移</span><span class="panel-badge">小プロンプト基準</span></div>
-      <div class="loading-overlay" id="latency-loading"><div class="spinner"></div></div>
-      <div class="chart-wrap"><canvas id="latencyChart"></canvas></div>
-    </div>
-  </div>
-  <div class="chart-grid" style="margin-top:16px;">
-    <div class="panel">
-      <div class="panel-header"><span class="panel-title">🔬 規模別 成功率</span><span class="panel-badge" id="size-chart-model">全体</span></div>
-      <div class="loading-overlay" id="size-loading"><div class="spinner"></div></div>
-      <div class="chart-wrap"><canvas id="sizeChart"></canvas></div>
-    </div>
-    <div class="panel">
-      <div class="panel-header"><span class="panel-title">🚦 エラー種別 分布</span><span class="panel-badge">直近期間</span></div>
-      <div class="loading-overlay" id="error-loading"><div class="spinner"></div></div>
-      <div class="chart-wrap"><canvas id="errorChart"></canvas></div>
+  <!-- 比較モード -->
+  <div class="compare-section">
+    <button class="compare-toggle" id="compare-toggle">
+      <span class="compare-toggle-title">📊 モデル別 成功率 比較モード</span>
+      <span class="compare-arrow">▼</span>
+    </button>
+    <div class="compare-body" id="compare-body">
+      <div class="compare-period-tabs">
+        <button class="compare-period-tab active" data-cperiod="week">1週間</button>
+        <button class="compare-period-tab" data-cperiod="month">1ヶ月</button>
+        <button class="compare-period-tab" data-cperiod="year">年</button>
+      </div>
+      <div class="compare-chart-wrap" style="position:relative;">
+        <div class="loading-overlay" id="compare-loading"><div class="spinner"></div></div>
+        <canvas id="compareChart"></canvas>
+      </div>
     </div>
   </div>
 
@@ -387,15 +455,18 @@ const MODEL_META = {
 };
 const SIZE_LABELS = { small:'小', medium:'中', large:'大' };
 const ALL_MODELS  = Object.keys(MODEL_COLORS);
+const MS_DAY  = 86400000;
+const MS_WEEK = 7 * MS_DAY;
 
 let state = {
-  gasUrl:        localStorage.getItem('gasUrl') || '',
-  currentPeriod: 'day',
-  currentModel:  'all',
-  historyPeriod: 'day',
-  rawData:       [],
+  gasUrl:         localStorage.getItem('gasUrl') || '',
+  currentPeriod:  'day',
+  currentModel:   'all',
+  historyPeriod:  'day',
+  comparePeriod:  'week',
+  rawData:        [],
   settings: { enabled_models: ALL_MODELS, interval_hours: 1, sizes: ['small','medium','large'], time_slot: '0-12' },
-  timeSlot12_24: false,
+  timeSlot12_24:  false,
 };
 let charts = {};
 
@@ -404,15 +475,20 @@ let charts = {};
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   initGASBanner();
+  initStatDateRange();
+  initStatHelp();
+  initHeatmapGuide();
   initPeriodTabs();
   initModelFilter();
   initSettingsDrawer();
   initButtons();
+  initCompareMode();
   initHistory();
   initProgressModal();
   if (state.gasUrl) { loadData(); loadSettings(); }
 });
 
+// ── GASバナー ────────────────────────────────────────────────
 function initGASBanner() {
   const banner = document.getElementById('gas-setup-banner');
   const input  = document.getElementById('gas-url-input');
@@ -429,6 +505,40 @@ function initGASBanner() {
   });
 }
 
+// ── 統計ウィジェット日付範囲 ────────────────────────────────
+function initStatDateRange() {
+  const now  = new Date();
+  const from = new Date(now.getTime() - MS_WEEK);
+  const fmt  = d => `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  document.getElementById('stats-date-range').textContent = `${fmt(from)} 〜 ${fmt(now)}`;
+}
+
+// ── 統計カード ？ボタン ──────────────────────────────────────
+function initStatHelp() {
+  document.querySelectorAll('.stat-help-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const descId = btn.dataset.desc;
+      const desc   = document.getElementById(descId);
+      const isOpen = desc.classList.contains('open');
+      document.querySelectorAll('.stat-desc').forEach(d => d.classList.remove('open'));
+      if (!isOpen) desc.classList.add('open');
+    });
+  });
+}
+
+// ── ヒートマップ見方説明トグル ───────────────────────────────
+function initHeatmapGuide() {
+  const btn   = document.getElementById('hm-guide-toggle');
+  const guide = document.getElementById('hm-guide');
+  btn.addEventListener('click', () => {
+    const isOpen = guide.classList.contains('open');
+    guide.classList.toggle('open');
+    btn.textContent = isOpen ? '▶ 見方の説明を見る' : '▼ 見方の説明を閉じる';
+  });
+}
+
+// ── 期間タブ ────────────────────────────────────────────────
 function initPeriodTabs() {
   document.getElementById('period-tabs').addEventListener('click', e => {
     const tab = e.target.closest('.period-tab');
@@ -440,6 +550,7 @@ function initPeriodTabs() {
   });
 }
 
+// ── モデルフィルター ─────────────────────────────────────────
 function initModelFilter() {
   renderModelChips();
   document.getElementById('model-filter').addEventListener('click', e => {
@@ -468,20 +579,12 @@ function renderModelChips() {
   if (active) active.classList.add('active');
 }
 
-function initButtons() {
-  document.getElementById('refresh-btn').addEventListener('click', () => loadData());
-  document.getElementById('run-now-btn').addEventListener('click', runNow);
-}
-
-// ============================================================
-// 設定ドロワー
-// ============================================================
+// ── 設定ドロワー ─────────────────────────────────────────────
 function initSettingsDrawer() {
   const overlay = document.getElementById('drawer-overlay');
   const drawer  = document.getElementById('settings-drawer');
   document.getElementById('settings-btn').addEventListener('click', () => {
-    overlay.classList.add('open'); drawer.classList.add('open');
-    renderSettingsUI();
+    overlay.classList.add('open'); drawer.classList.add('open'); renderSettingsUI();
   });
   const close = () => { overlay.classList.remove('open'); drawer.classList.remove('open'); };
   overlay.addEventListener('click', close);
@@ -491,13 +594,9 @@ function initSettingsDrawer() {
     const sc = e.target.closest('.size-check');
     if (sc) sc.classList.toggle('active');
   });
-
-  // 時間帯トグル
   document.getElementById('time-slot-toggle').addEventListener('click', () => {
-    state.timeSlot12_24 = !state.timeSlot12_24;
-    updateTimeSlotUI();
+    state.timeSlot12_24 = !state.timeSlot12_24; updateTimeSlotUI();
   });
-
   document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
 }
 
@@ -505,27 +604,18 @@ function updateTimeSlotUI() {
   const sw    = document.getElementById('time-slot-switch');
   const label = document.getElementById('time-slot-label');
   const sub   = document.getElementById('time-slot-sub');
-  const toggle= document.getElementById('time-slot-toggle');
-  if (state.timeSlot12_24) {
-    sw.style.background = 'var(--accent)';
-    sw.style.borderColor= 'var(--accent)';
-    sw.style.setProperty('--after-left','18px');
-    label.textContent = '12〜24時';
-    sub.textContent   = 'チェックを外すと0〜12時に戻ります';
-    toggle.style.borderColor = 'var(--accent)';
-  } else {
-    sw.style.background = '';
-    sw.style.borderColor= '';
-    label.textContent = '0〜12時（デフォルト）';
-    sub.textContent   = 'チェックで12〜24時に切り替え';
-    toggle.style.borderColor = '';
-  }
-  // トグルスイッチのつまみ位置をCSSで制御
-  sw.innerHTML = `<span style="position:absolute;top:2px;left:${state.timeSlot12_24?'18':'2'}px;width:14px;height:14px;border-radius:50%;background:${state.timeSlot12_24?'#0b1a0f':'var(--text-muted)'};transition:left .15s;"></span>`;
+  const tog   = document.getElementById('time-slot-toggle');
+  const left  = state.timeSlot12_24 ? '18' : '2';
+  const bg    = state.timeSlot12_24 ? '#0b1a0f' : 'var(--text-muted)';
+  sw.innerHTML = `<span style="position:absolute;top:2px;left:${left}px;width:14px;height:14px;border-radius:50%;background:${bg};transition:left .15s;"></span>`;
+  sw.style.background   = state.timeSlot12_24 ? 'var(--accent)' : '';
+  sw.style.borderColor  = state.timeSlot12_24 ? 'var(--accent)' : '';
+  tog.style.borderColor = state.timeSlot12_24 ? 'var(--accent)' : '';
+  label.textContent = state.timeSlot12_24 ? '12〜24時' : '0〜12時（デフォルト）';
+  sub.textContent   = state.timeSlot12_24 ? 'チェックを外すと0〜12時に戻ります' : 'チェックで12〜24時に切り替え';
 }
 
 function renderSettingsUI() {
-  // モデルトグル
   const list = document.getElementById('model-toggle-list');
   list.innerHTML = '';
   ALL_MODELS.forEach(model => {
@@ -538,13 +628,10 @@ function renderSettingsUI() {
     div.addEventListener('click', () => div.classList.toggle('active'));
     list.appendChild(div);
   });
-  // 規模
   document.querySelectorAll('.size-check').forEach(sc => {
     sc.classList.toggle('active', state.settings.sizes.includes(sc.dataset.size));
   });
-  // 間隔
   document.getElementById('interval-select').value = state.settings.interval_hours;
-  // 時間帯
   state.timeSlot12_24 = state.settings.time_slot === '12-24';
   updateTimeSlotUI();
 }
@@ -557,12 +644,10 @@ async function saveSettings() {
   const timeSlot = state.timeSlot12_24 ? '12-24' : '0-12';
   if (!models.length) { showToast('1つ以上のモデルを選択してください','error'); return; }
   if (!sizes.length)  { showToast('1つ以上の規模を選択してください','error'); return; }
-
   const btn = document.getElementById('save-settings-btn');
   btn.disabled = true; btn.textContent = '保存中...';
   try {
-    const url = `${state.gasUrl}?action=saveSettings&models=${models.join(',')}&sizes=${sizes.join(',')}&interval=${interval}&time_slot=${timeSlot}`;
-    const res = await fetchGAS(url);
+    const res = await fetchGAS(`${state.gasUrl}?action=saveSettings&models=${models.join(',')}&sizes=${sizes.join(',')}&interval=${interval}&time_slot=${timeSlot}`);
     if (res.success) {
       state.settings = { enabled_models: models, interval_hours: parseInt(interval), sizes, time_slot: timeSlot };
       renderModelChips();
@@ -575,9 +660,32 @@ async function saveSettings() {
   finally { btn.disabled = false; btn.textContent = '保存して反映'; }
 }
 
-// ============================================================
-// 実行履歴
-// ============================================================
+// ── ボタン ───────────────────────────────────────────────────
+function initButtons() {
+  document.getElementById('refresh-btn').addEventListener('click', () => loadData());
+  document.getElementById('run-now-btn').addEventListener('click', runNow);
+}
+
+// ── 比較モード ───────────────────────────────────────────────
+function initCompareMode() {
+  const toggle = document.getElementById('compare-toggle');
+  const body   = document.getElementById('compare-body');
+  toggle.addEventListener('click', () => {
+    toggle.classList.toggle('open');
+    body.classList.toggle('open');
+    if (body.classList.contains('open')) renderCompareChart();
+  });
+  document.querySelectorAll('.compare-period-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.compare-period-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.comparePeriod = tab.dataset.cperiod;
+      renderCompareChart();
+    });
+  });
+}
+
+// ── 実行履歴 ─────────────────────────────────────────────────
 function initHistory() {
   const toggle = document.getElementById('history-toggle');
   const body   = document.getElementById('history-body');
@@ -603,49 +711,36 @@ async function loadHistory() {
   try {
     const res = await fetchGAS(`${state.gasUrl}?action=getHistory&period=${state.historyPeriod}`);
     renderHistoryTable(res.history || []);
-  } catch(e) {
-    wrap.innerHTML = '<div class="history-empty">読み込み失敗</div>';
-  }
+  } catch(e) { wrap.innerHTML = '<div class="history-empty">読み込み失敗</div>'; }
 }
 
 function renderHistoryTable(history) {
   const wrap = document.getElementById('history-table-wrap');
   if (!history.length) { wrap.innerHTML = '<div class="history-empty">この期間の履歴はありません</div>'; return; }
-
   const sorted = [...history].sort((a,b) => b.timestamp - a.timestamp);
   const rows = sorted.map(h => {
     const dt   = new Date(h.timestamp);
-    const date = dt.toLocaleDateString('ja-JP', { month:'2-digit', day:'2-digit' });
-    const time = dt.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
-    const rate = h.total ? Math.round(h.success / h.total * 100) : 0;
-    return `<tr>
-      <td>${date} ${time}</td>
-      <td>${h.total}</td>
-      <td class="badge-success">${h.success}</td>
-      <td class="badge-error">${h.failed}</td>
-      <td style="color:${rate>=75?'var(--accent)':rate>=50?'var(--warn)':'var(--danger)'}">${rate}%</td>
-    </tr>`;
+    const date = dt.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'});
+    const time = dt.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    const rate = h.total ? Math.round(h.success/h.total*100) : 0;
+    const rateColor = rate>=75?'var(--accent)':rate>=50?'var(--warn)':'var(--danger)';
+    return `<tr><td>${date} ${time}</td><td>${h.total}</td><td class="badge-success">${h.success}</td><td class="badge-error">${h.failed}</td><td style="color:${rateColor}">${rate}%</td></tr>`;
   }).join('');
-
-  wrap.innerHTML = `<table class="history-table">
-    <thead><tr><th>実行日時</th><th>総数</th><th>成功</th><th>失敗</th><th>成功率</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
+  wrap.innerHTML = `<table class="history-table"><thead><tr><th>実行日時</th><th>総数</th><th>成功</th><th>失敗</th><th>成功率</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
-// ============================================================
-// 進捗モーダル
-// ============================================================
-function initProgressModal() { document.getElementById('done-modal-close').addEventListener('click', () => { document.getElementById('done-modal-overlay').classList.remove('open'); }); }
+// ── 完了モーダル ─────────────────────────────────────────────
+function initProgressModal() {
+  document.getElementById('done-modal-close').addEventListener('click', () => {
+    document.getElementById('done-modal-overlay').classList.remove('open');
+  });
+}
 
 async function runNow() {
   if (!state.gasUrl) { showToast('先にGAS URLを設定してください','error'); return; }
   const btn = document.getElementById('run-now-btn');
   btn.disabled = true; btn.textContent = '測定中...';
-
-  // 操作不能オーバーレイ表示
   document.getElementById('measuring-overlay').classList.add('open');
-
   try {
     const res = await fetchGAS(`${state.gasUrl}?action=runNow`);
     document.getElementById('measuring-overlay').classList.remove('open');
@@ -653,23 +748,18 @@ async function runNow() {
       showDoneModal(res.tasks || []);
       loadData();
       if (document.getElementById('history-body').classList.contains('open')) loadHistory();
-    } else {
-      showToast('測定失敗: '+(res.error||''),'error');
-    }
+    } else { showToast('測定失敗: '+(res.error||''),'error'); }
   } catch(e) {
     document.getElementById('measuring-overlay').classList.remove('open');
     showToast('通信エラー: '+e.message,'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '▶ 今すぐ測定';
-  }
+  } finally { btn.disabled = false; btn.textContent = '▶ 今すぐ測定'; }
 }
 
 function showDoneModal(tasks) {
   const total   = tasks.length;
-  const success = tasks.filter(t => t.status==='done').length;
-  const errors  = tasks.filter(t => t.status==='error').length;
-
-  document.getElementById('done-modal-icon').textContent  = errors === 0 ? '✅' : errors === total ? '❌' : '⚠️';
+  const success = tasks.filter(t=>t.status==='done').length;
+  const errors  = tasks.filter(t=>t.status==='error').length;
+  document.getElementById('done-modal-icon').textContent  = errors===0?'✅':errors===total?'❌':'⚠️';
   document.getElementById('done-modal-title').textContent = '測定完了';
   document.getElementById('done-modal-stats').innerHTML = `
     <div class="done-stat"><div class="done-stat-value" style="color:var(--text)">${total}</div><div class="done-stat-label">総測定数</div></div>
@@ -679,7 +769,6 @@ function showDoneModal(tasks) {
   document.getElementById('done-modal-overlay').classList.add('open');
 }
 
-
 // ============================================================
 // データ取得
 // ============================================================
@@ -687,11 +776,12 @@ async function loadData() {
   if (!state.gasUrl) return;
   setLoadingAll(true);
   try {
-    const res = await fetchGAS(`${state.gasUrl}?action=getData&period=${state.currentPeriod}&model=${state.currentModel}`);
+    const res = await fetchGAS(`${state.gasUrl}?action=getData&period=${state.currentPeriod}&model=all`);
     state.rawData = res.data || [];
-    document.getElementById('last-updated-text').textContent = '最終更新: ' + new Date().toLocaleTimeString('ja-JP');
+    document.getElementById('last-updated-text').textContent = '最終更新: '+new Date().toLocaleTimeString('ja-JP');
     updateStats();
     updateCharts();
+    if (document.getElementById('compare-body').classList.contains('open')) renderCompareChart();
   } catch(e) { showToast('データ取得失敗: '+e.message,'error'); }
   finally { setLoadingAll(false); }
 }
@@ -712,25 +802,26 @@ async function fetchGAS(url) {
 }
 
 function setLoadingAll(show) {
-  ['heatmap','success','latency','size','error'].forEach(id => {
+  ['heatmap','small','medium','large'].forEach(id => {
     const el = document.getElementById(id+'-loading');
     if (el) el.classList.toggle('show', show);
   });
 }
 
 // ============================================================
-// 統計
+// 統計（直近1週間固定）
 // ============================================================
 function updateStats() {
-  const data       = getFilteredData();
-  const total      = data.length;
-  const success    = data.filter(d => d.status==='success').length;
-  const rateLimit  = data.filter(d => d.status==='rate_limit').length;
-  const smallSucc  = data.filter(d => d.status==='success' && d.size==='small');
-  const avgLatency = smallSucc.length ? Math.round(smallSucc.reduce((s,d)=>s+d.latency_ms,0)/smallSucc.length) : null;
-  document.getElementById('stat-success-rate').textContent = total ? Math.round(success/total*100)+'%' : '--';
-  document.getElementById('stat-avg-latency').textContent  = avgLatency!==null ? avgLatency+'ms' : '--';
-  document.getElementById('stat-rate-limit').textContent   = rateLimit || '--';
+  const cutoff = Date.now() - MS_WEEK;
+  const data   = state.rawData.filter(d => d.timestamp >= cutoff);
+  const total  = data.length;
+  const succ   = data.filter(d=>d.status==='success').length;
+  const rl     = data.filter(d=>d.status==='rate_limit').length;
+  const sm     = data.filter(d=>d.status==='success'&&d.size==='small');
+  const avgLat = sm.length ? Math.round(sm.reduce((s,d)=>s+d.latency_ms,0)/sm.length) : null;
+  document.getElementById('stat-success-rate').textContent = total ? Math.round(succ/total*100)+'%' : '--';
+  document.getElementById('stat-avg-latency').textContent  = avgLat!==null ? avgLat+'ms' : '--';
+  document.getElementById('stat-rate-limit').textContent   = rl || '0';
   document.getElementById('stat-total').textContent        = total || '--';
 }
 
@@ -743,111 +834,159 @@ function getFilteredData() {
 // ============================================================
 function updateCharts() {
   renderHeatmap();
-  renderSuccessChart();
-  renderLatencyChart();
-  renderSizeChart();
-  renderErrorChart();
+  renderSizeChart('small',  'smallChart',  'small-loading');
+  renderSizeChart('medium', 'mediumChart', 'medium-loading');
+  renderSizeChart('large',  'largeChart',  'large-loading');
 }
 
+// ── ヒートマップ（小・中・大それぞれ） ──────────────────────
 function renderHeatmap() {
   const models = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
-  document.getElementById('heatmap-model-label').textContent = state.currentModel==='all' ? '全モデル' : (MODEL_META[state.currentModel]?.label||state.currentModel);
+  document.getElementById('heatmap-model-label').textContent = state.currentModel==='all'?'全モデル':(MODEL_META[state.currentModel]?.label||state.currentModel);
   const container = document.getElementById('heatmap-container');
   container.innerHTML = '';
-  const grid = document.createElement('div');
-  grid.className = 'heatmap-grid';
-  grid.appendChild(document.createElement('div'));
-  for (let h=0;h<24;h++) {
-    const c=document.createElement('div'); c.className='hm-header'; c.textContent=h; grid.appendChild(c);
-  }
-  models.forEach(model => {
-    const label=document.createElement('div'); label.className='hm-label';
-    label.textContent=(MODEL_META[model]?.label||model).replace('gemini-',''); grid.appendChild(label);
+  document.getElementById('heatmap-loading').classList.remove('show');
+
+  ['small','medium','large'].forEach(size => {
+    const title = document.createElement('div');
+    title.className = 'heatmap-size-title';
+    title.textContent = `── ${SIZE_LABELS[size]}プロンプト ──`;
+    container.appendChild(title);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'heatmap-wrap';
+    const grid = document.createElement('div');
+    grid.className = 'heatmap-grid';
+
+    // ヘッダー行
+    grid.appendChild(document.createElement('div'));
     for (let h=0;h<24;h++) {
-      const entries=state.rawData.filter(d=>d.model===model&&d.jst_hour===h);
-      const total=entries.length; const success=entries.filter(d=>d.status==='success').length;
-      const rlRatio=total?entries.filter(d=>d.status==='rate_limit').length/total:0;
-      const rate=total?success/total:null;
-      const cell=document.createElement('div'); cell.className='hm-cell';
-      cell.style.background=getHeatColor(rate,rlRatio);
-      const tip=document.createElement('div'); tip.className='hm-tooltip';
-      tip.innerHTML=total?`${h}:00 JST<br>成功:${success}/${total}(${Math.round(rate*100)}%)<br>429:${entries.filter(d=>d.status==='rate_limit').length}件`:`${h}:00 JST<br>データなし`;
-      cell.appendChild(tip); grid.appendChild(cell);
+      const c=document.createElement('div'); c.className='hm-header'; c.textContent=h; grid.appendChild(c);
+    }
+
+    // モデル行
+    models.forEach(model => {
+      const label=document.createElement('div'); label.className='hm-label';
+      label.textContent=(MODEL_META[model]?.label||model).replace('gemini-',''); grid.appendChild(label);
+      for (let h=0;h<24;h++) {
+        const entries=state.rawData.filter(d=>d.model===model&&d.size===size&&d.jst_hour===h);
+        const total=entries.length;
+        const success=entries.filter(d=>d.status==='success').length;
+        const rate=total?success/total:null;
+        const cell=document.createElement('div'); cell.className='hm-cell';
+        cell.style.background=getHeatColor(rate);
+        const tip=document.createElement('div'); tip.className='hm-tooltip';
+        if (total) {
+          const pct=Math.round(rate*100);
+          const status=pct>=75?'✅ 安定':pct>0?'⚠️ 不安定':'❌ 利用不可';
+          tip.innerHTML=`${h}:00 JST / ${SIZE_LABELS[size]}<br>${status}<br>成功:${success}/${total} (${pct}%)`;
+        } else {
+          tip.innerHTML=`${h}:00 JST / ${SIZE_LABELS[size]}<br>⬛ データなし`;
+        }
+        cell.appendChild(tip); grid.appendChild(cell);
+      }
+    });
+    wrap.appendChild(grid);
+    container.appendChild(wrap);
+  });
+}
+
+function getHeatColor(rate) {
+  if (rate===null) return '#1a2234';
+  if (rate>=0.75)  return '#4ade80';  // 安定（緑）
+  if (rate>0)      return '#fbbf24';  // 不安定（黄）
+  return '#f87171';                   // 利用不可（赤）
+}
+
+// ── 規模別時系列成功率チャート ──────────────────────────────
+function renderSizeChart(size, canvasId, loadingId) {
+  const buckets  = buildTimeBuckets();
+  const models   = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
+  const datasets = models.map(model => {
+    const color = MODEL_COLORS[model]||'#94a3b8';
+    return {
+      label: MODEL_META[model]?.label||model,
+      data:  buckets.map(b => {
+        const e = b.data.filter(d=>d.model===model&&d.size===size);
+        return e.length ? Math.round(e.filter(d=>d.status==='success').length/e.length*100) : null;
+      }),
+      borderColor: color, backgroundColor: color+'20',
+      fill: false, tension: 0.3, pointRadius: 3, spanGaps: true
+    };
+  });
+  renderLineChart(canvasId, loadingId, buckets.map(b=>b.label), datasets, {
+    y: { min:0, max:100, title:{display:true,text:'成功率(%)',color:'#64748b',font:{size:11}} }
+  });
+}
+
+// ── 比較モード棒グラフ ───────────────────────────────────────
+function renderCompareChart() {
+  const loading = document.getElementById('compare-loading');
+  if (loading) loading.classList.add('show');
+
+  const period = state.comparePeriod;
+  const cutoff = period==='week'  ? Date.now()-MS_WEEK :
+                 period==='month' ? Date.now()-30*MS_DAY :
+                                    Date.now()-365*MS_DAY;
+  const models = state.settings.enabled_models;
+
+  // モデル別・規模別の成功率を計算
+  const sizeKeys = ['small','medium','large'];
+  const groupLabels = models.map(m => MODEL_META[m]?.label||m);
+
+  const datasets = sizeKeys.map((size,si) => {
+    const colors = ['rgba(74,222,128,0.8)','rgba(96,165,250,0.8)','rgba(251,146,60,0.8)'];
+    return {
+      label: SIZE_LABELS[size]+'プロンプト',
+      data: models.map(model => {
+        const e = state.rawData.filter(d=>d.timestamp>=cutoff&&d.model===model&&d.size===size);
+        return e.length ? Math.round(e.filter(d=>d.status==='success').length/e.length*100) : 0;
+      }),
+      backgroundColor: colors[si], borderColor: colors[si].replace('0.8','1'), borderWidth:1
+    };
+  });
+
+  destroyChart('compareChart');
+  if (loading) loading.classList.remove('show');
+  charts['compareChart'] = new Chart(document.getElementById('compareChart'), {
+    type: 'bar',
+    data: { labels: groupLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color:'#94a3b8', font:{size:11} } } },
+      scales: {
+        x: { grid:{color:'#1f2d45'}, ticks:{color:'#64748b'} },
+        y: { min:0, max:100, grid:{color:'#1f2d45'}, ticks:{color:'#64748b'},
+             title:{display:true,text:'成功率(%)',color:'#64748b',font:{size:11}} }
+      }
     }
   });
-  container.appendChild(grid);
-  document.getElementById('heatmap-loading').classList.remove('show');
 }
 
-function getHeatColor(r,rl) {
-  if (r===null) return '#1a2234';
-  if (rl>0.5) return '#b45309';
-  if (r>=0.75) return '#4ade80';
-  if (r>=0.5)  return '#16a34a';
-  if (r>=0.25) return '#166534';
-  return '#14532d';
-}
-
-function renderSuccessChart() {
-  const buckets = buildTimeBuckets();
-  const models  = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
-  const datasets = models.map(model => {
-    const color = MODEL_COLORS[model]||'#94a3b8';
-    return { label:MODEL_META[model]?.label||model, data:buckets.map(b=>{ const e=b.data.filter(d=>d.model===model); return e.length?Math.round(e.filter(d=>d.status==='success').length/e.length*100):null; }), borderColor:color, backgroundColor:color+'20', fill:false, tension:0.3, pointRadius:3, spanGaps:true };
-  });
-  renderLineChart('successChart','success-loading',buckets.map(b=>b.label),datasets,{ y:{ min:0, max:100, title:{display:true,text:'成功率(%)',color:'#64748b',font:{size:11}} } });
-}
-
-function renderLatencyChart() {
-  const buckets = buildTimeBuckets();
-  const models  = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
-  const datasets = models.map(model => {
-    const color = MODEL_COLORS[model]||'#94a3b8';
-    return { label:MODEL_META[model]?.label||model, data:buckets.map(b=>{ const e=b.data.filter(d=>d.model===model&&d.status==='success'&&d.size==='small'); return e.length?Math.round(e.reduce((s,d)=>s+d.latency_ms,0)/e.length):null; }), borderColor:color, backgroundColor:color+'20', fill:false, tension:0.3, pointRadius:3, spanGaps:true };
-  });
-  renderLineChart('latencyChart','latency-loading',buckets.map(b=>b.label),datasets,{ y:{ title:{display:true,text:'レイテンシ(ms)',color:'#64748b',font:{size:11}} } });
-}
-
-function renderSizeChart() {
-  const sizes  = ['small','medium','large'];
-  const models = state.currentModel==='all' ? state.settings.enabled_models : [state.currentModel];
-  document.getElementById('size-chart-model').textContent = state.currentModel==='all'?'全体':(MODEL_META[state.currentModel]?.label||state.currentModel);
-  const datasets = models.map(model => {
-    const color = MODEL_COLORS[model]||'#94a3b8';
-    return { label:MODEL_META[model]?.label||model, data:sizes.map(size=>{ const e=state.rawData.filter(d=>d.model===model&&d.size===size); return e.length?Math.round(e.filter(d=>d.status==='success').length/e.length*100):0; }), backgroundColor:color+'cc', borderColor:color, borderWidth:1 };
-  });
-  destroyChart('sizeChart');
-  const ctx = document.getElementById('sizeChart');
-  document.getElementById('size-loading').classList.remove('show');
-  charts['sizeChart'] = new Chart(ctx, { type:'bar', data:{ labels:sizes.map(s=>SIZE_LABELS[s]), datasets }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{ x:{grid:{color:'#1f2d45'},ticks:{color:'#64748b'}}, y:{min:0,max:100,grid:{color:'#1f2d45'},ticks:{color:'#64748b'},title:{display:true,text:'成功率(%)',color:'#64748b',font:{size:11}}} } } });
-}
-
-function renderErrorChart() {
-  const data = getFilteredData();
-  const types = {};
-  data.filter(d=>d.status!=='success').forEach(d => {
-    const key = d.status==='rate_limit'?'レート制限(429)':d.error_code?.includes('503')?'サービス停止(503)':d.error_code?.includes('NO_API_KEY')?'APIキー未設定':'その他エラー';
-    types[key]=(types[key]||0)+1;
-  });
-  const succ = data.filter(d=>d.status==='success').length;
-  if (succ>0) types['成功']=succ;
-  const labels=Object.keys(types), values=Object.values(types);
-  const colors=labels.map(l=>l==='成功'?'#4ade80':l.includes('429')?'#fbbf24':l.includes('503')?'#f87171':'#94a3b8');
-  destroyChart('errorChart');
-  document.getElementById('error-loading').classList.remove('show');
-  charts['errorChart'] = new Chart(document.getElementById('errorChart'), { type:'doughnut', data:{ labels, datasets:[{ data:values, backgroundColor:colors, borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:11},boxWidth:12}}}, cutout:'60%' } });
-}
-
+// ── 時系列バケット ───────────────────────────────────────────
 function buildTimeBuckets() {
   const now=Date.now(), period=state.currentPeriod, buckets=[];
   if (period==='day') {
-    for (let i=23;i>=0;i--) { const t=now-i*3600000; const d=new Date(t); buckets.push({ label:d.getHours()+':00', data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+3600000) }); }
+    for (let i=23;i>=0;i--) {
+      const t=now-i*3600000; const d=new Date(t);
+      buckets.push({ label:d.getHours()+':00', data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+3600000) });
+    }
   } else if (period==='week') {
-    for (let i=6;i>=0;i--) { const t=now-i*86400000; const d=new Date(t); buckets.push({ label:(d.getMonth()+1)+'/'+(d.getDate()), data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+86400000) }); }
+    for (let i=6;i>=0;i--) {
+      const t=now-i*MS_DAY; const d=new Date(t);
+      buckets.push({ label:(d.getMonth()+1)+'/'+(d.getDate()), data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+MS_DAY) });
+    }
   } else if (period==='month') {
-    for (let i=29;i>=0;i--) { const t=now-i*86400000; const d=new Date(t); buckets.push({ label:(d.getMonth()+1)+'/'+(d.getDate()), data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+86400000) }); }
+    for (let i=29;i>=0;i--) {
+      const t=now-i*MS_DAY; const d=new Date(t);
+      buckets.push({ label:(d.getMonth()+1)+'/'+(d.getDate()), data:state.rawData.filter(r=>r.timestamp>=t&&r.timestamp<t+MS_DAY) });
+    }
   } else if (period==='year') {
-    for (let i=11;i>=0;i--) { const d=new Date(now); d.setDate(1); d.setMonth(d.getMonth()-i); const end=new Date(d); end.setMonth(end.getMonth()+1); buckets.push({ label:(d.getMonth()+1)+'月', data:state.rawData.filter(r=>r.timestamp>=d.getTime()&&r.timestamp<end.getTime()) }); }
+    for (let i=11;i>=0;i--) {
+      const d=new Date(now); d.setDate(1); d.setMonth(d.getMonth()-i);
+      const end=new Date(d); end.setMonth(end.getMonth()+1);
+      buckets.push({ label:(d.getMonth()+1)+'月', data:state.rawData.filter(r=>r.timestamp>=d.getTime()&&r.timestamp<end.getTime()) });
+    }
   }
   return buckets;
 }
@@ -855,7 +994,18 @@ function buildTimeBuckets() {
 function renderLineChart(canvasId, loadingId, labels, datasets, scalesExtra) {
   destroyChart(canvasId);
   document.getElementById(loadingId).classList.remove('show');
-  charts[canvasId] = new Chart(document.getElementById(canvasId), { type:'line', data:{ labels, datasets }, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{ x:{grid:{color:'#1f2d45'},ticks:{color:'#64748b',maxTicksLimit:12,font:{size:10}}}, y:{grid:{color:'#1f2d45'},ticks:{color:'#64748b'},...(scalesExtra?.y||{})} } } });
+  charts[canvasId] = new Chart(document.getElementById(canvasId), {
+    type: 'line', data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: { legend: { labels: { color:'#94a3b8', font:{size:10}, boxWidth:10 } } },
+      scales: {
+        x: { grid:{color:'#1f2d45'}, ticks:{color:'#64748b',maxTicksLimit:10,font:{size:9}} },
+        y: { grid:{color:'#1f2d45'}, ticks:{color:'#64748b'}, ...(scalesExtra?.y||{}) }
+      }
+    }
+  });
 }
 
 function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
