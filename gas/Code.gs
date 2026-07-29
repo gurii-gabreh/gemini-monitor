@@ -214,6 +214,13 @@ function setupInitialTrigger() {
 // 測定メイン処理
 // ============================================================
 function runMeasurement() {
+  const now = new Date();
+  if (!isWithinMeasurementWindow(now)) {
+    const window = getMeasurementWindow(now);
+    Logger.log(`測定スキップ: 現在JST${getJSTHour(now)}時は本日の測定時間帯(${window.label})外です`);
+    return;
+  }
+
   const settings = getSettings();
   const models   = settings.enabled_models;
   const sizes    = settings.sizes;
@@ -230,7 +237,6 @@ function runMeasurement() {
     sheet.setFrozenRows(1);
   }
 
-  const now     = new Date();
   const jstHour = getJSTHour(now);
   const rows    = [];
 
@@ -348,6 +354,26 @@ function getJSTHour(date) {
   // JSTはUTC+9
   const jst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   return jst.getUTCHours();
+}
+
+// ============================================================
+// 測定時間帯（無料枠節約のため1日のうち半分の12時間のみ測定）
+// JST基準の通し日数の偶奇で「午前(0〜11時)」「午後(12〜23時)」を
+// 1日ごとに自動で切り替える（1日目=午前、次の日=午後、…と交互）
+// ============================================================
+function getMeasurementWindow(date) {
+  const jst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const dayNumber = Math.floor(jst.getTime() / (24 * 60 * 60 * 1000));
+  const isMorningDay = dayNumber % 2 === 0;
+  return isMorningDay
+    ? { start: 0,  end: 11, label: '午前(0〜11時)' }
+    : { start: 12, end: 23, label: '午後(12〜23時)' };
+}
+
+function isWithinMeasurementWindow(date) {
+  const jstHour = getJSTHour(date);
+  const window  = getMeasurementWindow(date);
+  return jstHour >= window.start && jstHour <= window.end;
 }
 
 // ============================================================

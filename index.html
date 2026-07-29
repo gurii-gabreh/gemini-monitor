@@ -399,14 +399,13 @@ h1 span{color:var(--accent);}
   </div>
   <div class="form-group">
     <label class="form-label">測定時間帯（JST）</label>
-    <div class="time-slot-toggle" id="time-slot-toggle">
+    <div class="time-slot-toggle" id="time-slot-toggle" style="cursor:default;">
       <div>
-        <div class="time-slot-label" id="time-slot-label">0〜12時（デフォルト）</div>
-        <div class="time-slot-sub" id="time-slot-sub">チェックで12〜24時に切り替え</div>
+        <div class="time-slot-label" id="time-slot-label">本日は0〜11時（午前）</div>
+        <div class="time-slot-sub" id="time-slot-sub">1日ごとに午前(0〜11時)/午後(12〜23時)を自動で切り替えます</div>
       </div>
-      <div class="toggle-switch" id="time-slot-switch"></div>
     </div>
-    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">※ 無料枠節約のため12時間帯に限定しています</div>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">※ 無料枠節約のため1日12時間帯に限定し、翌日は残り12時間帯を測定します</div>
   </div>
   <div class="drawer-footer">
     <button class="btn btn-primary" id="save-settings-btn" style="flex:1">保存して反映</button>
@@ -465,9 +464,18 @@ let state = {
   historyPeriod:  'day',
   comparePeriod:  'week',
   rawData:        [],
-  settings: { enabled_models: ALL_MODELS, interval_hours: 1, sizes: ['small','medium','large'], time_slot: '0-12' },
-  timeSlot12_24:  false,
+  settings: { enabled_models: ALL_MODELS, interval_hours: 1, sizes: ['small','medium','large'] },
 };
+
+// 1日ごとに午前(0〜11時)/午後(12〜23時)を自動で切り替える（GAS側のgetMeasurementWindowと同じロジック）
+function getTodaysMeasurementWindow() {
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const dayNumber = Math.floor(jst.getTime() / (24 * 60 * 60 * 1000));
+  return (dayNumber % 2 === 0)
+    ? { label: '本日は0〜11時（午前）' }
+    : { label: '本日は12〜23時（午後）' };
+}
 let charts = {};
 
 // ============================================================
@@ -594,25 +602,12 @@ function initSettingsDrawer() {
     const sc = e.target.closest('.size-check');
     if (sc) sc.classList.toggle('active');
   });
-  document.getElementById('time-slot-toggle').addEventListener('click', () => {
-    state.timeSlot12_24 = !state.timeSlot12_24; updateTimeSlotUI();
-  });
   document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
 }
 
 function updateTimeSlotUI() {
-  const sw    = document.getElementById('time-slot-switch');
   const label = document.getElementById('time-slot-label');
-  const sub   = document.getElementById('time-slot-sub');
-  const tog   = document.getElementById('time-slot-toggle');
-  const left  = state.timeSlot12_24 ? '18' : '2';
-  const bg    = state.timeSlot12_24 ? '#0b1a0f' : 'var(--text-muted)';
-  sw.innerHTML = `<span style="position:absolute;top:2px;left:${left}px;width:14px;height:14px;border-radius:50%;background:${bg};transition:left .15s;"></span>`;
-  sw.style.background   = state.timeSlot12_24 ? 'var(--accent)' : '';
-  sw.style.borderColor  = state.timeSlot12_24 ? 'var(--accent)' : '';
-  tog.style.borderColor = state.timeSlot12_24 ? 'var(--accent)' : '';
-  label.textContent = state.timeSlot12_24 ? '12〜24時' : '0〜12時（デフォルト）';
-  sub.textContent   = state.timeSlot12_24 ? 'チェックを外すと0〜12時に戻ります' : 'チェックで12〜24時に切り替え';
+  label.textContent = getTodaysMeasurementWindow().label;
 }
 
 function renderSettingsUI() {
@@ -632,7 +627,6 @@ function renderSettingsUI() {
     sc.classList.toggle('active', state.settings.sizes.includes(sc.dataset.size));
   });
   document.getElementById('interval-select').value = state.settings.interval_hours;
-  state.timeSlot12_24 = state.settings.time_slot === '12-24';
   updateTimeSlotUI();
 }
 
@@ -641,15 +635,14 @@ async function saveSettings() {
   const models   = [...document.querySelectorAll('.model-toggle.active')].map(d => d.dataset.model);
   const sizes    = [...document.querySelectorAll('.size-check.active')].map(d => d.dataset.size);
   const interval = document.getElementById('interval-select').value;
-  const timeSlot = state.timeSlot12_24 ? '12-24' : '0-12';
   if (!models.length) { showToast('1つ以上のモデルを選択してください','error'); return; }
   if (!sizes.length)  { showToast('1つ以上の規模を選択してください','error'); return; }
   const btn = document.getElementById('save-settings-btn');
   btn.disabled = true; btn.textContent = '保存中...';
   try {
-    const res = await fetchGAS(`${state.gasUrl}?action=saveSettings&models=${models.join(',')}&sizes=${sizes.join(',')}&interval=${interval}&time_slot=${timeSlot}`);
+    const res = await fetchGAS(`${state.gasUrl}?action=saveSettings&models=${models.join(',')}&sizes=${sizes.join(',')}&interval=${interval}`);
     if (res.success) {
-      state.settings = { enabled_models: models, interval_hours: parseInt(interval), sizes, time_slot: timeSlot };
+      state.settings = { enabled_models: models, interval_hours: parseInt(interval), sizes };
       renderModelChips();
       document.getElementById('drawer-overlay').classList.remove('open');
       document.getElementById('settings-drawer').classList.remove('open');
